@@ -1,0 +1,41 @@
+{
+  "name": "matching-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@turf/turf": "^5.1.6",
+    "d3": "^5.14.2",
+    "leaflet": "^1.5.1",
+    "mapbox-gl": "^0.53.1",
+    "ngraph.graph": "^18.0.1",
+    "ngraph.path": "^1.2.0",
+    "papaparse": "^5.1.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-map-gl": "^4.1.1",
+    "react-mapbox-gl": "^4.2.0",
+    "react-scripts": "3.1.1",
+    "styled-components": "^4.4.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

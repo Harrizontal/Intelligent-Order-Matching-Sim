@@ -1,0 +1,31 @@
+<osm-script output="json" timeout="25">
+  <!-- gather results -->
+  <union>
+    <!-- query part for: “highway=* and highway!=footway and highway!=pedestrian and "-highway"!=path” -->
+    <query type="node">
+      <has-kv k="highway"/>
+      <has-kv k="highway" modv="not" v="footway"/>
+      <has-kv k="highway" modv="not" v="pedestrian"/>
+      <has-kv k="-highway" modv="not" v="path"/>
+      <bbox-query {{bbox}}/>
+    </query>
+    <query type="way">
+      <has-kv k="highway"/>
+      <has-kv k="highway" modv="not" v="footway"/>
+      <has-kv k="highway" modv="not" v="pedestrian"/>
+      <has-kv k="-highway" modv="not" v="path"/>
+      <bbox-query {{bbox}}/>
+    </query>
+    <query type="relation">
+      <has-kv k="highway"/>
+      <has-kv k="highway" modv="not" v="footway"/>
+      <has-kv k="highway" modv="not" v="pedestrian"/>
+      <has-kv k="-highway" modv="not" v="path"/>
+      <bbox-query {{bbox}}/>
+    </query>
+  </union>
+  <!-- print results -->
+  <print mode="body"/>
+  <recurse type="down"/>
+  <print mode="skeleton" order="quadtile"/>
+</osm-script>

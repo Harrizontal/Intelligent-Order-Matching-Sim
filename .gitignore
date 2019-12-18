@@ -26,7 +26,9 @@ yarn-error.log*
 lol.geojson
 /public/order.csv
 /public/points.geojson
+/public/map.osm
 /src/map/lol.json
 /src/map/singapore.osm
+/src/map/singapore.json
 /src/map/singapore1.json
 /src/map/test.geojson
