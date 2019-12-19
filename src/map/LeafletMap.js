@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   height: ${props => props.height};
 `;
 
-function LeafletMap({ markersData }) {
+function LeafletMap({ markersData,data }) {
   
   const [rows,setRow] = useState([]);
   useEffect(() => {
@@ -30,6 +30,8 @@ function LeafletMap({ markersData }) {
     }
     getData()
   },[])
+
+  
   const mapRef = useRef(null);
   useEffect(() => {
     mapRef.current = L.map("map", {
@@ -50,6 +52,7 @@ function LeafletMap({ markersData }) {
     layerRef.current = L.layerGroup().addTo(mapRef.current);
   }, []);
 
+  const [graph, setGraph] = useState(null)
   useEffect(() => {
     
     layerRef.current.clearLayers();
@@ -57,6 +60,9 @@ function LeafletMap({ markersData }) {
     //   L.marker(marker.latLng, { title: marker.title }).addTo(layerRef.current);
     // });
 
+    if (graph == null){
+      
+    }
     var test = require("./singapore1.json");
     let streets = populateRoads(test,layerRef.current)
     //let streets = L.geoJSON(street_feature_collection, default_options)
@@ -139,7 +145,7 @@ function LeafletMap({ markersData }) {
 
     // --- do not delete --> path ---- 
 
-  });
+  },[]);
 
   
   // useEffect(() => {

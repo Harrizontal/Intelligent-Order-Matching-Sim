@@ -19,6 +19,8 @@ function App() {
     { latLng: { lat: 1.2808, lng: 103.8259 }, title: 1 }
   ]);
 
+  const [data, setData] = useState(null)
+
 
   function addMarker() {
     const lastMarker = markersData[markersData.length - 1];
@@ -34,22 +36,30 @@ function App() {
       }
     ]);
   }
-  let ws = new WebSocket('ws://localhost:8080/ws')
-
+  
+  const [ws, setWebSocket] = useState(null)
   useEffect(()=>{
-    ws.onopen = () => {
-      console.log("connected")
-      
+    if(ws == null){
+      console.log("Set up websocket")
+      let ws = new WebSocket('ws://localhost:8080/ws')
+      setWebSocket(ws)
     }
-
-    ws.onmessage = evt => {
-      console.log(evt.data)
-      //ws.send("Hi from Client")
+    if (ws != null){
+      ws.onopen = () => {
+        console.log("connected")
+        
+      }
+  
+      ws.onmessage = evt => {
+        console.log(evt.data)
+        setData(evt.data)
+      }
+  
+      ws.onclose = (event) => {
+        console.log("Socket Closed Connection")
+      } 
     }
-
-    ws.onclose = (event) => {
-      console.log("Socket Closed Connection")
-    }
+    
   });
 
 
@@ -57,13 +67,19 @@ function App() {
     addMarker();
   }
 
+  /**
+   * Generate environment
+   * Use [1]
+   */
   function sendMessage(){
-    ws.send("Hi From Client")
+    console.log("Button pressed")
+    ws.send("[1,10]")
   }
 
   return (
     <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      <LeafletMap markersData={markersData} />
+      <LeafletMap markersData={markersData} data={data} />
+      <div>{data}</div>
       <button onClick={addMarker}>Move marker</button>
       <button onClick={displayRoads}>Display roads</button>
       <button onClick={sendMessage}>Spawn drivers</button>
