@@ -35,8 +35,8 @@ function LeafletMap({ markersData,data }) {
   const mapRef = useRef(null);
   useEffect(() => {
     mapRef.current = L.map("map", {
-      center: [1.2808, 103.8259],
-      zoom: 4,
+      center: [1.2808, 103.8259], //[1.2808, 103.8259] - singapore [30.684104, 104.053993]
+      zoom: 15,
       layers: [
         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGFycml6b250YWwiLCJhIjoiY2l6YWw3YW90MDQ1NzJ3cDl5bXd4M2Y4aSJ9.CnTz5K2ShZcuLiG0xYLBKw', {
           attribution:

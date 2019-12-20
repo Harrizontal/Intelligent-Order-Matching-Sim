@@ -38,29 +38,63 @@ function App() {
   }
   
   const [ws, setWebSocket] = useState(null)
-  useEffect(()=>{
-    if(ws == null){
-      console.log("Set up websocket")
-      let ws = new WebSocket('ws://localhost:8080/ws')
+  function connect() {
+    var ws = new WebSocket("ws://localhost:8080/ws")
+
+    ws.onerror = (err) => {
+      ws.close();
+    }
+
+    ws.onopen = () => {
+      console.log("Connected")
       setWebSocket(ws)
     }
-    if (ws != null){
-      ws.onopen = () => {
-        console.log("connected")
-        
-      }
-  
-      ws.onmessage = evt => {
-        console.log(evt.data)
-        setData(evt.data)
-      }
-  
-      ws.onclose = (event) => {
-        console.log("Socket Closed Connection")
-      } 
+
+    ws.onclose = () => {
+      console.log("Socket Closed Connection")
+      setTimeout(function() {
+        connect();
+      }, 4000);
     }
+
+    ws.onmessage = evt => {
+      console.log(evt.data)
+      setData(evt.data)
+    }
+  }
+
+  useEffect(() => {
+    //console.log("UseEffect")
+    if (ws == null){
+      connect()
+    }
+  })
+
+
+  // useEffect(()=>{
+  //   if(ws == null){
+  //     console.log("Set up websocket")
+  //     let ws = new WebSocket('ws://localhost:8080/ws')
+  //     setWebSocket(ws)
+  //   }
+
+  //   if (ws != null){
+  //     ws.onopen = () => {
+  //       console.log("connected")
+        
+  //     }
+  
+  //     ws.onmessage = evt => {
+  //       console.log(evt.data)
+  //       setData(evt.data)
+  //     }
+  
+  //     ws.onclose = (event) => {
+  //       console.log("Socket Closed Connection")
+  //     } 
+  //   }
     
-  });
+  // });
 
 
   function displayRoads() {
@@ -71,9 +105,18 @@ function App() {
    * Generate environment
    * Use [1]
    */
+
+  function intializeOrder(){
+    ws.send("[0]")
+  }
   function sendMessage(){
     console.log("Button pressed")
     ws.send("[1,10]")
+  }
+
+  function sendMessage2(){
+    console.log("Button pressed")
+    ws.send("[1,2]")
   }
 
   return (
@@ -82,7 +125,9 @@ function App() {
       <div>{data}</div>
       <button onClick={addMarker}>Move marker</button>
       <button onClick={displayRoads}>Display roads</button>
-      <button onClick={sendMessage}>Spawn drivers</button>
+      <button onClick={intializeOrder}>Intialize order distributor</button>
+      <button onClick={sendMessage}>Spawn Environment 1</button>
+      <button onClick={sendMessage2}>Spawn Environment 2</button>
     </div>
   );
 }
