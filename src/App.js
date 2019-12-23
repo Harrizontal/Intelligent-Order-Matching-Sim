@@ -60,6 +60,44 @@ function App() {
     ws.onmessage = evt => {
       console.log(evt.data)
       setData(evt.data)
+      // 2,1,EnvironmentId,DriverId
+      var response = JSON.parse("["+evt.data+"]")
+      var eId = response[2] // environment Id
+      var dId = response[3] // driver Id
+      var randomPoint = [1.2774947,103.8460384]
+      switch (response[0]){
+        case 2:
+          switch(response[1]){
+            case 0: // random point
+              var command = [2,0,eId,dId,randomPoint]
+              var asd = JSON.stringify(command)
+              ws.send(asd)
+              break;
+            case 1:
+              // start, destination, and waypoint
+              var command = [2,1,eId,dId,randomPoint,randomPoint,[randomPoint,randomPoint]]
+              var asd = JSON.stringify(command)
+              ws.send(asd)
+              break;
+            case 2: // pathway between two points
+              console.log("Testing "+response[4][0])
+              var command = [2,2,eId,dId,[randomPoint,randomPoint,randomPoint,randomPoint]]
+              var asd = JSON.stringify(command)
+              ws.send(asd)
+              break;
+            case 3: // create a node
+              var command = [2,3,eId,dId,true]
+              var asd = JSON.stringify(command)
+              ws.send(asd)
+              break;
+            case 4:
+              var command = [2,4,eId,dId,true]
+              var asd = JSON.stringify(command)
+              ws.send(asd)
+              break;
+          }
+      }
+      
     }
   }
 
@@ -110,13 +148,20 @@ function App() {
     ws.send("[0]")
   }
   function sendMessage(){
-    console.log("Button pressed")
-    ws.send("[1,10]")
+    console.log("Spawn Environment 1")
+    ws.send("[1,5]")
   }
 
   function sendMessage2(){
-    console.log("Button pressed")
-    ws.send("[1,2]")
+    console.log("Spawn Environment 2")
+    ws.send("[1,1]")
+  }
+  
+  function testMessage(){
+    var randomPoint = [1.2774947,103.8460384]
+    var command = [2,0,3,2,[randomPoint]]
+    var asdasd = JSON.stringify(command)
+    console.log(asdasd)
   }
 
   return (
@@ -128,6 +173,7 @@ function App() {
       <button onClick={intializeOrder}>Intialize order distributor</button>
       <button onClick={sendMessage}>Spawn Environment 1</button>
       <button onClick={sendMessage2}>Spawn Environment 2</button>
+      <button onClick={testMessage}>TestButton</button>
     </div>
   );
 }
