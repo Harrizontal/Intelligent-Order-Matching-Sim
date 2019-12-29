@@ -12,8 +12,7 @@ export const streetsToGraph = streets => {
   //start to end. Then, add the coordinates at each index as a node, and an edge between each adjacent node in the array,
   //associating the distance between the nodes (between their coordinates) with each edge.
   streets.eachLayer(streetToGraphBound);
-
-  return graph;
+  return graph
 };
 
 export const streetToGraph = (graph, street) => {

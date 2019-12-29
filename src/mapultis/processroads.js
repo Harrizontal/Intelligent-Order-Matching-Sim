@@ -14,7 +14,51 @@ export const populateRoads = (data,layerRef) => {
     type: "FeatureCollection",
     features: street_features
   };
-  let streets = L.geoJSON(street_feature_collection, default_options).addTo(layerRef)
+  console.log(street_feature_collection)
+  let streets = L.geoJSON(street_feature_collection, default_options)
+  console.log(streets)
+  streets.addTo(layerRef)
+  let id_map = {};
+
+  // find intersections between all roads
+  streets.eachLayer(function(street) {
+    id_map[street.feature.id] = street._leaflet_id;
+    addStreetLayerIntersections(street,streets);
+  });
+
+  return streets
+}
+
+export const populateRoads2 = (data,map) => {
+  let street_features = getStreetFeatures(data)
+  let default_options = {
+    color: "red",
+    weight: 3,
+    opacity: 0.5
+  };
+
+  let street_feature_collection = {
+    type: "FeatureCollection",
+    features: street_features
+  };
+
+  let streets = L.geoJSON(street_feature_collection, default_options)
+    map.addLayer({
+      'id': 'points',
+      'type': 'line',
+      'source': {
+          'type': 'geojson',
+          'data': street_feature_collection
+      },
+      'layout': {
+          'line-cap': 'round',
+          'line-join': 'round'
+          },
+      'paint': {
+      'line-color': 'red',
+      'line-width': 2
+      }
+  })
 
   let id_map = {};
 

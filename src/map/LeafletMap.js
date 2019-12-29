@@ -78,7 +78,11 @@ function LeafletMap({ markersData,data }) {
 
     // // converts streets into graph.
     var streetsGraph = streetsToGraph(streets)
-
+    var graphDict = {}
+    streetsGraph.forEachNode(function(node){
+      graphDict[node.id] = 1
+    });
+    console.log(graphDict)
     // for testing - display nodes in map
     // var group = new L.LayerGroup();
     // streetsGraph.forEachNode(function(node){
@@ -127,7 +131,9 @@ function LeafletMap({ markersData,data }) {
 
     // --- do not delete --> path ---- 
     let pathFinder = npath.aStar(streetsGraph)
-    let foundPath = pathFinder.find('1.2770392,103.846895','1.2774947,103.8460384')
+    //let foundPath = pathFinder.find('1.2770557,103.8470143','1.2783808,103.8468822')
+    let foundPath = pathFinder.find('1.2787672,103.8444549','1.2741305,103.8430676')
+    
     console.log(foundPath)
 
     var group = new L.LayerGroup();
