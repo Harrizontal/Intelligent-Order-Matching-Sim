@@ -247,7 +247,6 @@ function App() {
     <div>
     <MapboxGLMap driversPosition={driversData} testData ={testData} waypointPosition={waypointPosition} ref={childRef}/>
     {/* <MapboxGLMap2 driversPosition={driversData} /> */}
-    <h1>Marker {marker}</h1>
     <button onClick={addNewDriver}>Add New Driver</button>
     <button onClick={addRandomCoordinates}>Add random coordinates</button>
     <button onClick={addTestData}>Get random point</button>

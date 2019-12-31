@@ -83,7 +83,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
     const initializeMap = ({ setMap, mapContainer }) => {
       const map = new mapboxgl.Map({
         container: mapContainer.current,
-        style: "mapbox://styles/mapbox/streets-v11", // stylesheet location
+        style: "mapbox://styles/mapbox/streets-v11?optimize=true", // stylesheet location
         center: [103.8259,1.2808],
         zoom: 14
       });
@@ -132,22 +132,86 @@ const MapboxGLMap = forwardRef((props,ref) => {
             buffer: 10
           });
     
+          // map.addLayer({
+          //   'id': 'point',
+          //   'type': 'circle',
+          //   'source': 'point',
+          //   'paint': {
+          //     'circle-radius': 5,
+          //     'circle-color': ['match',
+          //     ['get','type'],
+          //     'Driver',
+          //     '#0687f5',
+          //     'Task',
+          //     '#921dde',
+          //     '#53565d'
+          //     ]
+          //   }
+          // })
+
+          // map.addLayer({
+          //   'id': 'point',
+          //   'type': 'circle',
+          //   'source': 'point',
+          //   'paint': {
+          //     'circle-radius': 5,
+          //     'circle-color': 
+          //     ['match',["to-number",['get','status']],0,'#0687f5','#F50606'],
+          //   }
+          // })
+
           map.addLayer({
             'id': 'point',
             'type': 'circle',
             'source': 'point',
             'paint': {
               'circle-radius': 5,
-              'circle-color': ['match',
-              ['get','type'],
-              'Driver',
-              '#0687f5',
-              'Task',
-              '#921dde',
-              '#53565d'
-              ]
+              'circle-color': 
+              ['match',['get','status',['get','information']],
+                0,
+                'red',
+                1,
+                'blue',
+                2,
+                'yellow',
+                3,
+                'yellow',
+                'black'
+              ],
             }
           })
+
+
+          //['match',['string',['get','status']],'0','#0687f5','1','#F2AF1E','2','#18A927','3','#0D7618','#3F33FF']
+          // map.addLayer({
+          //   'id': 'point',
+          //   'type': 'circle',
+          //   'source': 'point',
+          //   'paint': {
+          //     'circle-radius': 5,
+          //     'circle-color': 
+          //     ['case',
+          //       ['==',['get',"type"], "Driver"],
+          //       ['match',['to-number',['get','status']],
+          //         0,
+          //         'red',
+          //         1,
+          //         'green',
+          //         2,
+          //         'yellow',
+          //         3,
+          //         '#0D7618',
+          //         '#3F33FF'
+          //       ], 
+          //       ['==',['get',"type"], "Task"],
+          //       '#921dde', 
+          //       ['==',['get',"type"], "Point"],
+          //       '#000000',
+          //       '#000000'
+          //     ],
+          //   }
+          // })
+
         }else{
           //console.log("Update new point")
           map.getSource('point').setData(driversPosition[0])
@@ -292,7 +356,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
         {driversPosition[0].features.map(feature => {
           switch(feature.properties.type){
             case 'Driver':
-              return <li>Driver {feature.properties.information.id}, Status: {feature.properties.information.status}</li>
+              return <li>Driver {feature.properties.information.id}, Status: {feature.properties.information.status}, CurrentTask: {feature.properties.information.current_task_id}</li>
             case 'Task':
               return <li>Task {feature.properties.information.id}, Status: {feature.properties.information.status}</li>
           }
