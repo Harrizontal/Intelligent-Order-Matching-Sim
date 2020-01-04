@@ -1,23 +1,32 @@
 import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import mapboxgl from "mapbox-gl";
+import MapboxDraw from "@mapbox/mapbox-gl-draw"
 import "mapbox-gl/dist/mapbox-gl.css";
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { streetsToGraph } from "../mapultis/graphroads";
 import {populateRoads2 } from "../mapultis/processroads"
 import * as npath from 'ngraph.path'
 import * as turf from '@turf/turf'
 import {connect, useSelector} from 'react-redux'
-import {useDeepEffect} from './useDeepEffect'
 import * as _ from 'lodash'
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import * as d3 from "d3";
+
 const styles = {
-  width: "100vw",
-  height: "calc(100vh - 80px)",
+  width: "100%",
+  height: "70vh",
   position: "relative"
 };
 
 const MapboxGLMap = forwardRef((props,ref) => {
   const [map, setMap] = useState(null);
   const mapContainer = useRef(null);
-  const {driversPosition, testData, waypointPosition} = props
+  const {driversPosition, polygonData, testData, waypointPosition} = props
+  const draw = useRef(null)
+  const [graphDict,setGraphDict] = useState(null)
+  const pathFinder = useRef(null)
+  const quadtree = useRef(null)
 
   useImperativeHandle(ref, () => ({
 
@@ -32,7 +41,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
       return Object.keys(graphDict)[randomPoint]
     },
     getWaypoint(startingPoint,endingPoint){
-      var waypoint = pathFinder.find(endingPoint,startingPoint)
+      var waypoint = pathFinder.current.find(endingPoint,startingPoint)
       const coordinateWaypoint = waypoint.map(x => {
         var coordinates = x.id.split(',')
         return [parseFloat(coordinates[0]),parseFloat(coordinates[1])]
@@ -42,7 +51,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
     getStartEndWaypoint(){
       var startingPoint = this.getRandomPoint()
       var endingPoint = this.getRandomPoint()
-      var waypoint = pathFinder.find(endingPoint,startingPoint)
+      var waypoint = pathFinder.current.find(endingPoint,startingPoint)
       if(waypoint.length == 0){
         return this.getStartEndWaypoint()
       }else{
@@ -60,7 +69,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
     },
     getEndWaypoint(startingPoint){
       var endingPoint = this.getRandomPoint()
-      var waypoint = pathFinder.find(endingPoint,startingPoint)
+      var waypoint = pathFinder.current.find(endingPoint,startingPoint)
       if(waypoint.length == 0){
         return this.getEndWaypoint(startingPoint)
       }else{
@@ -73,6 +82,10 @@ const MapboxGLMap = forwardRef((props,ref) => {
         var endPoint = [parseFloat(ending[0]),parseFloat(ending[1])]
         return [endPoint, coordinateWaypoint]
       }
+    },
+    getNearestNode(lng,lat){
+      let node = quadtree.current.find(lng,lat) // return string lng,lat
+      return node
     }
   }))
 
@@ -87,6 +100,19 @@ const MapboxGLMap = forwardRef((props,ref) => {
         center: [103.8259,1.2808],
         zoom: 14
       });
+      var mapboxDraw = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          polygon: true,
+          trash: true
+        }
+      });
+      draw.current = mapboxDraw
+      map.addControl(mapboxDraw)
+
+      map.on('draw.create', updateArea);
+      map.on('draw.delete', updateArea);
+      map.on('draw.update', updateArea);
 
       map.on("load", () => {
         setMap(map);
@@ -97,24 +123,33 @@ const MapboxGLMap = forwardRef((props,ref) => {
     if (!map) initializeMap({ setMap, mapContainer });
   }, [map]);
 
+  function updateArea(e){
+    console.log(draw.current.getAll())
+  }
+
+  
   // initialize graph
-  const [graphDict,setGraphDict] = useState(null)
-  const [pathFinder,setPathFinder] = useState(null)
+  
   useEffect(() => {
     if ( map != null && graphDict == null){
+        var qtree = d3.quadtree()
         var data = require("../map/singapore1.json")
         let streets = populateRoads2(data,map)
         var streetsGraph = streetsToGraph(streets)
         var graphDict = {}
         streetsGraph.forEachNode(function(node){
-        graphDict[node.id] = 1
+          // streetsgraphs' nodes are in lat,lng format...
+          let coordinate = node.id.split(",") 
+          graphDict[node.id] = 1
+          qtree.add([coordinate[1],coordinate[0]])
         });
+        quadtree.current = qtree
+        console.log(quadtree.current)
         console.log(graphDict)
         setGraphDict(graphDict)
 
-        let pathFinder = npath.aStar(streetsGraph)
-        setPathFinder(pathFinder)
-        let foundPath = pathFinder.find('1.2787672,103.8444549','1.2741305,103.8430676')
+        pathFinder.current = npath.aStar(streetsGraph)
+        let foundPath = pathFinder.current.find('1.2787672,103.8444549','1.2741305,103.8430676')
         console.log(foundPath)
     }
   },[map])
@@ -129,39 +164,22 @@ const MapboxGLMap = forwardRef((props,ref) => {
           map.addSource('point',{
             type: 'geojson',
             data: data,
-            buffer: 10
           });
-    
-          // map.addLayer({
-          //   'id': 'point',
-          //   'type': 'circle',
-          //   'source': 'point',
-          //   'paint': {
-          //     'circle-radius': 5,
-          //     'circle-color': ['match',
-          //     ['get','type'],
-          //     'Driver',
-          //     '#0687f5',
-          //     'Task',
-          //     '#921dde',
-          //     '#53565d'
-          //     ]
-          //   }
-          // })
 
-          // map.addLayer({
-          //   'id': 'point',
-          //   'type': 'circle',
-          //   'source': 'point',
-          //   'paint': {
-          //     'circle-radius': 5,
-          //     'circle-color': 
-          //     ['match',["to-number",['get','status']],0,'#0687f5','#F50606'],
-          //   }
-          // })
+          //TODO: put into another function
+          map.addLayer({
+            'id': 'environment2',
+            'type': 'fill',
+            'source': 'point',
+            'paint': {
+              'fill-color': '#888888',
+              'fill-opacity': 0.4
+            },
+            'filter': ['==', '$type', 'Polygon']
+          })
 
           map.addLayer({
-            'id': 'point',
+            'id': 'driver',
             'type': 'circle',
             'source': 'point',
             'paint': {
@@ -178,40 +196,33 @@ const MapboxGLMap = forwardRef((props,ref) => {
                 'yellow',
                 'black'
               ],
-            }
+            },
+            'filter': ['==', '$type', 'Point']
           })
 
-
-          //['match',['string',['get','status']],'0','#0687f5','1','#F2AF1E','2','#18A927','3','#0D7618','#3F33FF']
           // map.addLayer({
-          //   'id': 'point',
+          //   'id': 'driver',
           //   'type': 'circle',
           //   'source': 'point',
           //   'paint': {
           //     'circle-radius': 5,
           //     'circle-color': 
-          //     ['case',
-          //       ['==',['get',"type"], "Driver"],
-          //       ['match',['to-number',['get','status']],
-          //         0,
-          //         'red',
-          //         1,
-          //         'green',
-          //         2,
-          //         'yellow',
-          //         3,
-          //         '#0D7618',
-          //         '#3F33FF'
-          //       ], 
-          //       ['==',['get',"type"], "Task"],
-          //       '#921dde', 
-          //       ['==',['get',"type"], "Point"],
-          //       '#000000',
-          //       '#000000'
+          //     ['match',['get','environment_id',['get','information']],
+          //       0,
+          //       'red',
+          //       1,
+          //       'blue',
+          //       2,
+          //       'yellow',
+          //       3,
+          //       'yellow',
+          //       'black'
           //     ],
-          //   }
+          //   },
+          //   'filter': ['==', '$type', 'Point']
           // })
 
+          
         }else{
           //console.log("Update new point")
           map.getSource('point').setData(driversPosition[0])
@@ -220,150 +231,71 @@ const MapboxGLMap = forwardRef((props,ref) => {
     }
   },[driversPosition])
 
-  // var currentMarkers=[];
-  // useEffect(()=>{
-  //   if (waypointPosition.length > 0) {
-  //     for (var i = 0; i < currentMarkers.length; i++){
-  //       currentMarkers[i].remove()
-  //     }
-  //     waypointPosition.map((lnglat) => {
-  //       var marker = new mapboxgl.Marker();
-  //       currentMarkers.push(marker)
-  //       marker.setLngLat({lng:lnglat[1], lat:lnglat[0]})
-  //       marker.addTo(map)
-  //     })
-  //   }
-  // },[waypointPosition])
+  useEffect(() => {
+    //console.log("useEffect driversPosition")
+    if(map){
+        if(!map.getSource('env')){
+          console.log("Intializing new source polygon")
+          var data = polygonData[0]
+          map.addSource('env',{
+            type: 'geojson',
+            data: data,
+          });
 
+        
+          map.addLayer({
+            'id': 'environment2',
+            'type': 'fill',
+            'source': 'env',
+            'paint': {
+              'fill-color': 'red',
+              'fill-opacity': 0.8
+            },
+            'filter': ['==', '$type', 'Polygon']
+          })
+          
+        }else{
+          map.getSource('env').setData(polygonData[0])
+        }
+    }
+  },[polygonData])
 
-  // useEffect(() => {
-  //   console.log("test data changed")
-  //   console.log(driversPosition[0].features.length)
-  //   if (map){
-  //     map.addSource('point',{
-  //       type: 'geojson',
-  //       data: driversPosition[0],
-  //       buffer: 5
-  //     });
-  
-  //     map.addLayer({
-  //       id: 'point',
-  //       type: 'circle',
-  //       source: 'point',
-  //       paint: {
-  //         'circle-radius':5,
-  //         'circle-color': 'blue',
-  //         'circle-stroke-width':1,
-  //         'circle-stroke-color':'white'
-  //       }
-  //     })
-  //   }
-    
-  // },[driversPosition])
-  // var marker = new mapboxgl.Marker();
-
-  // function addMovingMarker(){
-  //   requestAnimationFrame(animateMarker)
-
-  // }
-
-  // function animateMarker(timestamp){
-  //   var radius = 20;
-  //   marker.setLngLat([Math.cos(timestamp/ 1000) * radius, Math.sin(timestamp / 1000) * radius])
-  //   marker.addTo(map);
-
-  //   requestAnimationFrame(animateMarker)
-  // }
-
-
-  // var point = {
-  //   'type': 'FeatureCollection',
-  //   'features': [{
-  //     'type': 'Feature',
-  //     'properties': {},
-  //     'geometry': {
-  //       'type': 'Point',
-  //       'coordinates': origin
-  //     }
-  //   }]
-  // }
-  // var steps = 50
-  // var counter = 0;
-  // var marker = new mapboxgl.Marker();
-  // const [arc,setArc] = useState(null)
-  
-  
-  // useEffect(() => {
-  //   var origin = [103.8430676,1.2741305];
-  //   var destination = [103.8444503, 1.2785377];
-  //   var lineDistance = turf.distance(origin,destination,{units: 'meters'});
-  //     var arc = []
-  //     for (var i = 0; i < lineDistance; i += lineDistance / steps) {
-  //       var segment = turf.along(turf.lineString([origin,destination]), i, {units: 'meters'});
-  //       arc.push(segment.geometry.coordinates);
-  //     }
-  //     arc.push(destination)
-  //     setArc(arc)
-  // },[])
-
-
-  // function moveMarker(){
-  //   console.log(counter + ":" +arc[counter])
-    
-  //   if (counter < steps + 1){
-  //     marker.setLngLat([arc[counter][0],arc[counter][1]])
-  //     marker.addTo(map)
-  //     requestAnimationFrame(moveMarker)
-  //   }
-  //   counter = counter + 1
-
-  // }
-
-  // function fakeDrivers(){
-  //   // let source = map.getSource("point")._data
-  //   // let features = source.features; 
-  //   // console.log(source)
-  //   //   console.log(features)
-
-  //   let driversFeatures = driversPosition.features
-  //     driversFeatures.forEach((value,index) => {
-  //       value.geometry.coordinates[0] = value.geometry.coordinates[0] - 0.001
-  //       value.geometry.coordinates[1] = value.geometry.coordinates[1] - 0.001
-  //     })
-      
-  //   console.log(driversPosition.features)
-    
-
-  //   if (map){
-  //     map.getSource("point").setData(driversPosition)
-  //   }
-  //   requestAnimationFrame(fakeDrivers)
-  // }
-
-  function usePrevious(value) {
-    const ref = useRef();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  }
-
-
-  return (
-    <div>
-      <div ref={el => (mapContainer.current = el)} style={styles} />
-      <ol>
-        {driversPosition[0].features.map(feature => {
+  const Display = props => {
+    if (props.data != null && props.data[0].features.length > 0){
+      var sorted = _.sortBy(props.data[0].features,['environment_id'],['id'])
+      //console.log(sorted)
+      return (
+        <ol>
+        {sorted.map(feature => {
           switch(feature.properties.type){
             case 'Driver':
-              return <li>Driver {feature.properties.information.id}, Status: {feature.properties.information.status}, CurrentTask: {feature.properties.information.current_task_id}</li>
+              return <li>Env:{feature.properties.information.environment_id}, DriverId:{feature.properties.information.id}, Status: {feature.properties.information.status}, CurrentTask: {feature.properties.information.current_task_id}</li>
             case 'Task':
-              return <li>Task {feature.properties.information.id}, Status: {feature.properties.information.status}</li>
+              return <li>Env:{feature.properties.information.environment_id} Task {feature.properties.information.id}, Status: {feature.properties.information.status}</li>
           }
         })
         }
-      </ol>
-      {/* <button onClick={moveMarker}>Moving button</button> */}
+      </ol> 
+      )
+     
+    }else{
+      return <div>no data</div>
+    }
+    
+  }
+
+  return (
+    <div>
+      <Grid container spacing={1}>
+        <Grid item xs={8}>
+          <div ref={el => (mapContainer.current = el)} style={styles} />
+        </Grid>
+        <Grid item xs={4}>
+        <Display data={driversPosition}/>
+        </Grid>
+      </Grid>
+      
+      
     </div>
   )
   
