@@ -43,22 +43,23 @@ export const populateRoads2 = (data,map) => {
   };
 
   let streets = L.geoJSON(street_feature_collection, default_options)
-  //   map.addLayer({
-  //     'id': 'points',
-  //     'type': 'line',
-  //     'source': {
-  //         'type': 'geojson',
-  //         'data': street_feature_collection
-  //     },
-  //     'layout': {
-  //         'line-cap': 'round',
-  //         'line-join': 'round'
-  //         },
-  //     'paint': {
-  //     'line-color': 'red',
-  //     'line-width': 2
-  //     }
-  // })
+    map.addLayer({
+      'id': 'points',
+      'type': 'line',
+      'source': {
+          'type': 'geojson',
+          'data': street_feature_collection
+      },
+      'layout': {
+          'line-cap': 'round',
+          'line-join': 'round'
+          },
+      'paint': {
+        'line-color': 'red',
+        'line-width': 2,
+        'line-opacity':0.15
+      }
+  })
 
   let id_map = {};
 

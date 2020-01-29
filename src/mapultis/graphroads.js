@@ -58,7 +58,7 @@ export const streetToGraph = (graph, street) => {
 		start_coords = pointToCoordinateArray(node_a),
 		end_coords = pointToCoordinateArray(node_b),
 		segment = turf.lineSlice(start_coords, end_coords, street.toGeoJSON()),
-		distance = turf.length(segment);
+		distance = turf.length(segment); // returns kilometers (default)
 		graph.addLink(a_string, b_string, {
 			distance: distance,
 			place: { type: "street",

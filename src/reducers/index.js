@@ -1,6 +1,6 @@
 import {combineReducers} from 'redux';
-import {markerReducer} from './marker'
+import {mapDrawReducer} from './drawmap'
 
 export default combineReducers({
-    markerStuff: markerReducer
+    mapDraw: mapDrawReducer
 })

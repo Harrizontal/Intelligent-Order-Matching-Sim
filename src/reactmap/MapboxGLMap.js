@@ -7,11 +7,12 @@ import { streetsToGraph } from "../mapultis/graphroads";
 import {populateRoads2 } from "../mapultis/processroads"
 import * as npath from 'ngraph.path'
 import * as turf from '@turf/turf'
-import {connect, useSelector} from 'react-redux'
+import {connect, useSelector, useDispatch} from 'react-redux'
 import * as _ from 'lodash'
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import * as d3 from "d3";
+
 
 const styles = {
   width: "100%",
@@ -22,11 +23,12 @@ const styles = {
 const MapboxGLMap = forwardRef((props,ref) => {
   const [map, setMap] = useState(null);
   const mapContainer = useRef(null);
-  const {driversPosition, polygonData, testData, waypointPosition} = props
+  const {driversData, envData, taskData, waypointPosition} = props
   const draw = useRef(null)
   const [graphDict,setGraphDict] = useState(null)
   const pathFinder = useRef(null)
   const quadtree = useRef(null)
+  const dispatch = useDispatch();
 
   useImperativeHandle(ref, () => ({
 
@@ -47,6 +49,11 @@ const MapboxGLMap = forwardRef((props,ref) => {
         return [parseFloat(coordinates[0]),parseFloat(coordinates[1])]
       })
       return coordinateWaypoint
+    },
+    getDistance(startingPoint,endingPoint){
+      var waypoint = pathFinder.current.find(endingPoint,startingPoint)
+      var distance = getDistance(waypoint)
+      return distance
     },
     getStartEndWaypoint(){
       var startingPoint = this.getRandomPoint()
@@ -86,6 +93,28 @@ const MapboxGLMap = forwardRef((props,ref) => {
     getNearestNode(lng,lat){
       let node = quadtree.current.find(lng,lat) // return string lng,lat
       return node
+    },
+    resetMap(){
+      if(map != null){
+        if(map.getSource('env')){
+          map.removeLayer('env-layer')
+          map.removeSource('env')
+          
+        }
+
+        if(map.getSource('driver')){
+          map.removeLayer('driver-layer')
+          map.removeSource('driver')
+         
+        }
+
+        if(map.getSource('task')){
+          map.removeLayer('task-layer')
+          map.removeSource('task')
+          
+        }
+
+      }
     }
   }))
 
@@ -97,8 +126,8 @@ const MapboxGLMap = forwardRef((props,ref) => {
       const map = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/streets-v11?optimize=true", // stylesheet location
-        center: [103.8259,1.2808],
-        zoom: 14
+        center: [104.053993,30.684104], // [104.053993,30.684104] [103.8259,1.2808]
+        zoom: 10.5
       });
       var mapboxDraw = new MapboxDraw({
         displayControlsDefault: false,
@@ -110,6 +139,11 @@ const MapboxGLMap = forwardRef((props,ref) => {
       draw.current = mapboxDraw
       map.addControl(mapboxDraw)
 
+      dispatch({
+        type: "SET_MAP_DRAW",
+        payload: mapboxDraw,
+      })
+      
       map.on('draw.create', updateArea);
       map.on('draw.delete', updateArea);
       map.on('draw.update', updateArea);
@@ -124,7 +158,28 @@ const MapboxGLMap = forwardRef((props,ref) => {
   }, [map]);
 
   function updateArea(e){
+    // console.log(draw.current)
     console.log(draw.current.getAll())
+    
+
+    let geojson = draw.current.getAll()
+    //console.log(geojson.features[0].geometry.coordinates)
+    switch(geojson.features.length){
+      case 0:
+        dispatch({
+          type: "DELETE_POLYGON",
+          polygon_coordinates: null,
+        })
+        break
+      case 1:
+        console.log(geojson.features[0].geometry.coordinates)
+        dispatch({
+          type: "SET_POLYGON",
+          polygon_coordinates: geojson.features[0].geometry.coordinates[0]
+        })
+        break
+    }
+
   }
 
   
@@ -133,7 +188,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
   useEffect(() => {
     if ( map != null && graphDict == null){
         var qtree = d3.quadtree()
-        var data = require("../map/singapore1.json")
+        var data = require("../map/lol.json")
         let streets = populateRoads2(data,map)
         var streetsGraph = streetsToGraph(streets)
         var graphDict = {}
@@ -145,43 +200,83 @@ const MapboxGLMap = forwardRef((props,ref) => {
         });
         quadtree.current = qtree
         console.log(quadtree.current)
-        console.log(graphDict)
+        console.log(graphDict) // lat lng format
         setGraphDict(graphDict)
 
         pathFinder.current = npath.aStar(streetsGraph)
-        let foundPath = pathFinder.current.find('1.2787672,103.8444549','1.2741305,103.8430676')
-        console.log(foundPath)
+
     }
   },[map])
 
-  //driverPositions
+  function getDistance(arrayNodes){
+    let distanceArray = 0
+    for (let k = 0; k < arrayNodes.length - 1; k++){
+      var node = arrayNodes[k]
+      var node1 = arrayNodes[k].id
+      var node2 = arrayNodes[k + 1].id
+      for (let f = 0; f < node.links.length; f++){
+        var link = node.links[f]
+        if ((link.fromId == node1 && link.toId == node2) || (link.fromId == node2 && link.toId == node1)){
+          distanceArray = distanceArray + link.data.distance
+        }
+      }
+    }
+    //console.log(distanceArray)
+    return distanceArray
+  }
+
   useEffect(() => {
-    //console.log("useEffect driversPosition")
+    if(pathFinder.current != null){
+      console.log(pathFinder.current)
+      let foundPath = pathFinder.current.find('30.6978248,104.0708831','30.6879967,104.0546328')
+      console.log(foundPath)
+    } 
+  },[pathFinder])
+
+
+  useEffect(() => {
     if(map){
-        if(!map.getSource('point')){
-          console.log("Intializing new source")
-          var data = driversPosition[0]
-          map.addSource('point',{
+        if(!map.getSource('env')){
+          console.log("Intializing new source polygon")
+          var data = envData[0]
+          map.addSource('env',{
             type: 'geojson',
             data: data,
           });
 
-          //TODO: put into another function
           map.addLayer({
-            'id': 'environment2',
+            'id': 'env-layer',
             'type': 'fill',
-            'source': 'point',
+            'source': 'env',
             'paint': {
               'fill-color': '#888888',
-              'fill-opacity': 0.4
+              'fill-opacity': 0.2
             },
             'filter': ['==', '$type', 'Polygon']
           })
+          
+        }else{
+          map.getSource('env').setData(envData[0])
+        }
+    }
+  },[envData])
+
+  
+  useEffect(() => {
+    //console.log("useEffect driversPosition")
+    if(map){
+        if(!map.getSource('driver')){
+          console.log("Intializing new source for drivers data")
+          var data = driversData[0]
+          map.addSource('driver',{
+            type: 'geojson',
+            data: data,
+          });
 
           map.addLayer({
-            'id': 'driver',
+            'id': 'driver-layer',
             'type': 'circle',
-            'source': 'point',
+            'source': 'driver',
             'paint': {
               'circle-radius': 5,
               'circle-color': 
@@ -193,7 +288,9 @@ const MapboxGLMap = forwardRef((props,ref) => {
                 2,
                 'yellow',
                 3,
-                'yellow',
+                'green',
+                4,
+                'red', // purple colour #6a0dad
                 'black'
               ],
             },
@@ -221,44 +318,101 @@ const MapboxGLMap = forwardRef((props,ref) => {
           //   },
           //   'filter': ['==', '$type', 'Point']
           // })
+          
+          var popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+          });
 
+          map.on('mouseenter','driver-layer',function(e){
+            //console.log(e.features[0].geometry.coordinates)
+            var infoObject = JSON.parse(e.features[0].properties.information)
+            // console.log(infoObject.id)
+            // console.log(JSON.parse(e.features[0].properties.information))
+            var taskId;
+            if (infoObject.id != undefined){
+              taskId = 'DriverId:'+infoObject.id + '<br>' + 
+                        'EnvId:'+infoObject.environment_id + '<br>'+
+                        'CurrentTask:'+infoObject.current_task_id
+            }
+
+            var cord = e.features[0].geometry.coordinates.slice()
+            popup
+              .setLngLat(cord)
+              .setHTML(taskId)
+              .addTo(map);
+          })
+
+          map.on('mouseleave', 'driver-layer', function() {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+          });
+         
           
         }else{
           //console.log("Update new point")
-          map.getSource('point').setData(driversPosition[0])
+          map.getSource('driver').setData(driversData[0])
         }
     
     }
-  },[driversPosition])
+  },[driversData])
 
   useEffect(() => {
-    //console.log("useEffect driversPosition")
     if(map){
-        if(!map.getSource('env')){
+        if(!map.getSource('task')){
           console.log("Intializing new source polygon")
-          var data = polygonData[0]
-          map.addSource('env',{
+          var data = taskData[0]
+          map.addSource('task',{
             type: 'geojson',
             data: data,
           });
 
-        
           map.addLayer({
-            'id': 'environment2',
-            'type': 'fill',
-            'source': 'env',
+            'id': 'task-layer',
+            'type': 'circle',
+            'source': 'task',
             'paint': {
-              'fill-color': 'red',
-              'fill-opacity': 0.8
+              'circle-radius': 5,
+              'circle-color': 'black',
             },
-            'filter': ['==', '$type', 'Polygon']
+            'filter': ['==', '$type', 'Point']
           })
+
+          var popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+          });
+
+          map.on('mouseenter','task-layer',function(e){
+            //console.log(e.features[0].geometry.coordinates)
+            var infoObject = JSON.parse(e.features[0].properties.information)
+            // console.log(infoObject.id)
+            // console.log(JSON.parse(e.features[0].properties.information))
+            var taskId;
+            if (infoObject.id != undefined && infoObject.value != undefined){
+              taskId = 'Id:'+infoObject.id + '<br>' + 
+                      'Value: '+infoObject.value + '<br>' +
+                      'Distance: '+infoObject.distance
+            }else{
+              taskId = infoObject.id
+            }
+            var cord = e.features[0].geometry.coordinates.slice()
+            popup
+              .setLngLat(cord)
+              .setHTML(taskId)
+              .addTo(map);
+          })
+
+          map.on('mouseleave', 'task-layer', function() {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+          });
           
         }else{
-          map.getSource('env').setData(polygonData[0])
+          map.getSource('task').setData(taskData[0])
         }
     }
-  },[polygonData])
+  },[taskData])
 
   const Display = props => {
     if (props.data != null && props.data[0].features.length > 0){
@@ -285,18 +439,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
   }
 
   return (
-    <div>
-      <Grid container spacing={1}>
-        <Grid item xs={8}>
-          <div ref={el => (mapContainer.current = el)} style={styles} />
-        </Grid>
-        <Grid item xs={4}>
-        <Display data={driversPosition}/>
-        </Grid>
-      </Grid>
-      
-      
-    </div>
+         <div ref={el => (mapContainer.current = el)} style={styles} />
   )
   
 })
