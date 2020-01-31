@@ -42,7 +42,7 @@ function App() {
   //   }]
   // }
 
-  const intialData = {
+  const intialData2 = {
     labels: [],
     datasets: [
       {
@@ -61,7 +61,14 @@ function App() {
         data: []
       }]
   }
-  const [lineData, setLineData] = useState(intialData)
+
+  const intialData = {
+      labels: [],
+      datasets: []
+    }
+
+  const [lineData, setLineData] = useState(intialData2)
+  const [lineDataRegret, setLineDataRegret] = useState(intialData)
 
   const [ws, setWebSocket] = useState(null)
 
@@ -69,18 +76,25 @@ function App() {
     socket.current.send("[3,0]")
   }
  
-  function pauseSimulation(){
-    socket.current.send("[0]")
+  function retrieveOrders(){
+    socket.current.send("[3,2]")
   }
 
+  //TODO: 
   function sendParamaters(){
-    var obj = {
-      command: 0,
-      second_command: 1,
-      data: {
-        task_value_type: "random"
+    var obj = [0,1,{
+      task_parameters: {
+        task_value_type: "distance",
+        value_per_km: 5,
+        peak_hour_rate: 2.3,
+        reputation_given_type: "fixed",
+        reputation_value: 5
+      },
+      dispatcher_parameters:{
+        dispatcher_interval: 5000,
+        similiar_reputation: 1.5
       }
-    }
+    }]
     var data = JSON.stringify(obj)
     socket.current.send(data)
   }
@@ -102,7 +116,7 @@ function App() {
   }
   useEffect(() => {
     if (socket.current != null){
-      console.log("Listening")
+      //console.log("Listening")
       socket.current.onmessage = (evt) => {
         // const incomingMessage = `Message from WebSocket: ${msg.data}`;
         // console.log(incomingMessage)
@@ -124,9 +138,8 @@ function App() {
                 case 2: // tasks data
                   setTaskData([res.data])
                   break
-                case 3:
-                  // setTimer(res.data)
-                  console.log(res.data)
+                case 3: // roaming, picking up, fetching up count stats
+                  //console.log(res.data)
                   const roamingData = lineData.datasets[0].data
                   const pickingData = lineData.datasets[1].data
                   const fetchingData = lineData.datasets[2].data
@@ -171,10 +184,48 @@ function App() {
 
                   setLineData(newLineData)
                   break
+                case 4:
+                  const ldr = lineDataRegret
+                  let drivers_regret = res.data.drivers_regret
+                  // console.log(res.data)
+                  // console.log(ldr)
+                  // console.log("Total drivers: "+drivers_regret.length)
+                  // console.log("Current drivers: "+ldr.datasets.length)
+                  ldr.labels = lineDataRegret.labels.concat(res.data.time)
+                  if (ldr.datasets.length == 0){
+                    // console.log("Accessing coz 0")
+                    for (let k = 0; k < drivers_regret.length; k++){
+                      var dr = {
+                        label: drivers_regret[k].driver_id,
+                        fill: false,
+                        data: [],
+                        lineTension: 0.1,
+                        borderColor: 'rgba(75,192,192,1)',
+                        backgroundColor: 'rgba(75,192,192,1)',
+                        borderDashOffset: 0.0,
+                        borderDash: []
+                      }
+                      dr.data.push(drivers_regret[k].regret)
+                      //console.log(dr)
+                      ldr.datasets.push(dr)
+                    }
+                    setLineDataRegret(ldr)
+                    //console.log(ldr)
+                  }else{
+                    for (let k = 0; k < drivers_regret.length; k++){
+                      for (let f = 0; f < ldr.datasets.length; f++){
+                        if (drivers_regret[k].driver_id == ldr.datasets[f].label){
+                          ldr.datasets[f].data.push(drivers_regret[k].regret)
+                          break;
+                        }
+                      }
+                    }
+                    setLineDataRegret(ldr)
+                  }
               }
               break;
             case 2:
-              console.log(evt.data)
+             // console.log(evt.data)
               switch(res.command_second){
                 case 0: // random point
                   // var command = [2,0,eId,dId,destinationPoint]
@@ -182,19 +233,19 @@ function App() {
                   // ws.send(asd)
                   break;
                 case 1:
-                  console.log("[Console]Setting Driver "+dId)
+                  //console.log("[Console]Setting Driver "+dId)
                   // start, destination, and waypoint
                   results = childRef.current.getStartEndWaypoint() // retrieve random start, random end and its waypoints
                   command = [2,1,eId,dId,results[0],results[1],results[2]]
-                  console.log(results[2])
+                  //console.log(results[2])
                   socket.current.send(JSON.stringify(command))
                   break;
                 case 2: // pathway between two points
-                  console.log("[Console]Calculating pathway between "+res.data.lat_lngs[0] + " and "+res.data.lat_lngs[1])
+                  //console.log("[Console]Calculating pathway between "+res.data.lat_lngs[0] + " and "+res.data.lat_lngs[1])
                   current_location = res.data.lat_lngs[0]
                   destination = res.data.lat_lngs[1]
                   var waypoint = childRef.current.getWaypoint(current_location.toString(),destination.toString())
-                  console.log(waypoint)
+                  //console.log(waypoint)
                   command = [2,2,eId,dId,waypoint]
                   socket.current.send(JSON.stringify(command))
                   break;
@@ -208,7 +259,8 @@ function App() {
                   destination = res.data.lat_lngs[1]
                   command = [2,4,eId,dId,destination]
                   var asd = JSON.stringify(command)
-                  console.log("[Console]Driver "+res.data.driver_id+" travelling from "+current_location+" to "+destination)
+                  console.log(asd)
+                 // console.log("[Console]Driver "+res.data.driver_id+" travelling from "+current_location+" to "+destination)
                   setTimeout(function(){ 
                     if(socket.current != null){
                       socket.current.send(asd)
@@ -216,10 +268,10 @@ function App() {
                   }, 50); // 500 speed intially,then 100
                   break;
                 case 5: // random destination and waypoint
-                console.log("[Console]Driver "+res.data.driver_id+" generating new randomness")
+                  //console.log("[Console]Driver "+res.data.driver_id+" generating new randomness")
                   results = childRef.current.getEndWaypoint(res.data.lat_lngs[0].toString())
                   command = [2,5,eId,dId,res.data.lat_lngs[0],results[0],results[1]]
-                  console.log(command)
+                 // console.log(command)
                   var asd = JSON.stringify(command)
                   socket.current.send(asd)
                   break;
@@ -228,20 +280,17 @@ function App() {
               switch(res.command_second){
                 case 1:
                   // call quad tree function
-                  console.log(evt.data)
+                 // console.log(evt.data)
                   let pul = res.data.pick_up_coordinates
                   let dol = res.data.drop_off_coordinates
-                  console.log("Pick up location: "+pul +", Drop off location: "+dol)
+                  //console.log("Pick up location: "+pul +", Drop off location: "+dol)
                   var updated_pul = childRef.current.getNearestNode(pul[0],pul[1])
                   var updated_dol = childRef.current.getNearestNode(dol[0],dol[1])
-                  console.log("New Pick up:"+updated_pul + ", New Drop off:"+updated_dol)
+                  //console.log("New Pick up:"+updated_pul + ", New Drop off:"+updated_dol)
                   var updated_pul_latlng = [updated_pul[1],updated_pul[0]].toString()
                   var updated_dol_latlng = [updated_dol[1],updated_dol[0]].toString()
-                  console.log(updated_pul_latlng)
-                  console.log(updated_dol_latlng)
                   var waypoint = childRef.current.getWaypoint(updated_pul_latlng,updated_dol_latlng)
                   var distance = childRef.current.getDistance(updated_pul_latlng,updated_dol_latlng)
-                  console.log(waypoint)
                   if (waypoint.length > 0){
                     command = [
                       3,1,[
@@ -258,13 +307,13 @@ function App() {
                     command = [3,1,[],[],0]
                   }
                   var string_command = JSON.stringify(command)
-                  console.log(string_command)
+                  //console.log(string_command)
                   socket.current.send(string_command)
               }
               
           }
         }catch(err){
-          console.log("error in:" + evt.data)
+          console.log("Error in:" + evt.data)
         }
       }
     }
@@ -288,8 +337,10 @@ function App() {
       socket.current.close()
       socket.current = null
       setConnection(false)
+      // clear data
       childRef.current.resetMap()
-      setLineData(intialData)
+      setLineData(intialData2)
+      setLineDataRegret(intialData)
     }
     
   }
@@ -333,6 +384,7 @@ function App() {
           </Grid>
           <Grid item xs={4}>
             <Line data={lineData} options={lineChartOptions}/>
+            <Line data={lineDataRegret} options={lineChartOptions}/>
           </Grid>
           <Grid item xs={3}>
             <TaskSettings ws={socket}/>
@@ -351,13 +403,13 @@ function App() {
                 </CardContent>
                 <CardActions>
                     <ConnectButton connection={connection}/>
-                    <Button disabled={connection !== true} onClick={pauseSimulation} size="small">Pause</Button>
+                    {/* <Button disabled={connection !== true} onClick={pauseSimulation} size="small">Pause</Button> */}
                     <Button disabled={connection !== true} onClick={sendParamaters} size="small">Submit Paramaters</Button>
+                    <Button disabled={connection !== true} onClick={retrieveOrders} size="small">Retrieve Orders</Button>
                     <Button disabled={connection !== true} onClick={intializeOrder} size="small">D. Order</Button>
                 </CardActions>
             </Card>
           </Grid>
-          
         </Grid>
       </div>
     </div>

@@ -39,7 +39,7 @@ const MapboxGLMap = forwardRef((props,ref) => {
       var totalPoints = Object.keys(graphDict).length;
       var max = totalPoints - 1
       var randomPoint = Math.floor(Math.random() * (max - 0)) + 0
-      console.log(Object.keys(graphDict)[randomPoint])
+      //console.log(Object.keys(graphDict)[randomPoint])
       return Object.keys(graphDict)[randomPoint]
     },
     getWaypoint(startingPoint,endingPoint){

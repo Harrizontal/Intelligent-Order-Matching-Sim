@@ -31,7 +31,7 @@ const TaskSetting = (props) => {
               Task Parameters
               </Typography>
               <Grid container direction="column" spacing={2} align>
-                <Grid container direction="row" xs={12}>
+                <Grid item container direction="row" xs={12}>
                   <Grid item xs={6}>Value of Task</Grid>
                   <Grid item xs={6}>
                   <select>
@@ -40,37 +40,37 @@ const TaskSetting = (props) => {
                   </select>
                   </Grid>
                 </Grid>
-                <Grid container direction="row">
+                <Grid item container direction="row">
                   <Grid item xs={6}>Value per 1km</Grid>
                   <Grid item xs={6}>
                     <input type="text"/>
                   </Grid>
                 </Grid>
-                <Grid container direction="row">
+                <Grid item container direction="row">
                   <Grid item xs={6}>Peak hour rate</Grid>
                   <Grid item xs={6}>
                     <input type="text"/>
                   </Grid>
                 </Grid>
-                <Grid container direction="row">
+                <Grid item container direction="row">
                   <Grid item xs={6}>Reputation given type</Grid>
                   <Grid item xs={6}>
                   <select>
-                    <option value="volvo">Random</option>
+                    <option value="volvo">Random (0 - 5)</option>
                     <option value="saab">Fixed</option>
                   </select>
                   </Grid>
                 </Grid>
-                <Grid container direction="row">
-                  <Grid item xs={6}>Reputation value (1-5)</Grid>
+                <Grid item container direction="row">
+                  <Grid item xs={6}>Reputation value (0-5)</Grid>
                   <Grid item xs={6}>
                     <input type="text"/>
                   </Grid>
                 </Grid>
               </Grid>
-              <Typography className={classes.title2} color="textSecondary" gutterBottom>
+              {/* <Typography className={classes.title2} color="textSecondary" gutterBottom>
               Driver Paramaters
-              </Typography>
+              </Typography> */}
             </CardContent>
         </Card>
     )
