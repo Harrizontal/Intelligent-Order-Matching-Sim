@@ -8,7 +8,6 @@ import {Provider} from 'react-redux'
 import store from './store'
 import { createMuiTheme } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/styles';
-import { purple } from '@material-ui/core/colors';
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 const theme = createMuiTheme({

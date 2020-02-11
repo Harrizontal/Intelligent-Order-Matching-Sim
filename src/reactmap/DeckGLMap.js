@@ -28,8 +28,9 @@ const selectedFeatureIndexes = [];
 
 const COLOURS = {
     RED: [220, 20, 60], // crimison
+    PURPLE: [138,43,226], // purple (blueviolet)
     BLUE: [30,144,255], // dodgerblue
-    YELLOW: [255, 255, 0], // yellow
+    YELLOW: [204, 204, 0], // yellow (oliver)
     GREEN: [0, 128, 0], // green
     BLACK: [0,0,0] // black
 };
