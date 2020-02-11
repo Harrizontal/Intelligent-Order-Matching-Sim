@@ -62,6 +62,7 @@ export const populateRoads2 = (data,map) => {
   })
 
   let id_map = {};
+  console.log(streets)
 
   // find intersections between all roads
   streets.eachLayer(function(street) {
@@ -69,6 +70,40 @@ export const populateRoads2 = (data,map) => {
     addStreetLayerIntersections(street,streets);
   });
 
+  return streets
+}
+
+export const displayRoads = (data,map) => {
+  let street_features = getStreetFeatures(data)
+  let default_options = {
+    color: "red",
+    weight: 3,
+    opacity: 0.5
+  };
+
+  let street_feature_collection = {
+    type: "FeatureCollection",
+    features: street_features
+  };
+
+  let streets = L.geoJSON(street_feature_collection, default_options)
+    map.addLayer({
+      'id': 'points',
+      'type': 'line',
+      'source': {
+          'type': 'geojson',
+          'data': street_feature_collection
+      },
+      'layout': {
+          'line-cap': 'round',
+          'line-join': 'round'
+          },
+      'paint': {
+        'line-color': 'red',
+        'line-width': 2,
+        'line-opacity':0.15
+      }
+  })
   return streets
 }
 /**

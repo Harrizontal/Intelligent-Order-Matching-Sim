@@ -43,20 +43,24 @@ const EnvSettings = (props) => {
   // }
 
   const createEnvironment = () => {
+    console.log(mapDraw)
     if (mapDraw.polygon_coordinates != null){
       // console.log("Environment Created")
       // console.log(mapDraw.polygon_coordinates)
       var command = [1,parseInt(noOfDrivers),mapDraw.polygon_coordinates]
       props.ws.current.send(JSON.stringify(command))
-      dispatch({
-        type: "DELETE_POLYGON"
-      })
-      dispatch({
-        type: "DECREMENT"
-      })
+      // dispatch({
+      //   type: "DELETE_POLYGON"
+      // })
+      // dispatch({
+      //   type: "DECREMENT"
+      // })
     }else{
       alert("No polygon selected")
     }
+
+    
+
     // var polygon = [
     //   [103.84234159818976, 1.279866261067454],
     //   [103.84211574227038, 1.270871895638848],

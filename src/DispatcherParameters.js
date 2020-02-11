@@ -2,16 +2,8 @@ import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } f
 import ReactDOM from 'react-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import { useSelector,useDispatch } from "react-redux";
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles({
@@ -25,7 +17,20 @@ const useStyles = makeStyles({
   });
 
 
-const DispatcherParameters = (props) => {
+const DispatcherParameters = forwardRef((props,ref) => {
+    const [dispatchInt, setDispatchInt] = useState(5000)
+    const [simReputation, setSimReputation] = useState(1.5)
+
+    useImperativeHandle(ref, () => ({
+      getDispatchParameters(){
+        let params = {
+          dispatcher_interval: parseFloat(dispatchInt),
+          similiar_reputation: parseFloat(simReputation)
+        }
+        return params
+      }
+    }))
+
     const classes = useStyles();
     return (
         <Card>
@@ -37,19 +42,19 @@ const DispatcherParameters = (props) => {
                   <Grid container direction="row" xs={12}>
                     <Grid item xs={6}>Dispatch Interval (in ms)</Grid>
                     <Grid item xs={6}>
-                        <input type="text"/>
+                        <input type="text" value={dispatchInt} onChange={e => setDispatchInt(e.target.value)}/>
                     </Grid>
                   </Grid>
                   <Grid container direction="row">
                     <Grid item xs={6}>Similar Reputation (+/-)</Grid>
                     <Grid item xs={6}>
-                      <input type="text"/>
+                      <input type="text" value={simReputation} onChange={e => setSimReputation(e.target.value)}/>
                     </Grid>
                   </Grid>
                 </Grid>
             </CardContent>
         </Card>
     )
-}
+})
 
 export default DispatcherParameters;

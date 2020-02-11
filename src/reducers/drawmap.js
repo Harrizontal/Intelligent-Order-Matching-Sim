@@ -32,6 +32,7 @@ export const mapDrawReducer = (state = {mapDraw: null, polygon_coordinates: null
                 mapDraw: action.payload
             }
         case 'SET_POLYGON':
+            console.log("hello")
             return {
                 ...state,
                 polygon_coordinates: action.polygon_coordinates
