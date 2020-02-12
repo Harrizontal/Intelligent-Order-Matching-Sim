@@ -480,7 +480,7 @@ function App() {
        
        <div className={classes.root}>
         <Grid container spacing={1}>
-          <Grid item xs={7}>
+          <Grid item xs={7} style={{height:"55vh"}}>
             <DeckGLMap driversData={driversData}/>
           </Grid>
           <Grid item xs={5}>
