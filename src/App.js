@@ -28,22 +28,11 @@ import DeckGLMap from "./reactmap/DeckGLMap"
 function App() {
   const dispatch = useDispatch()
   const [message,setMessage] = useState(null)
-  const [driversData,setDriversData]= useState(null)
-  const driversData2 = useRef(null)
-  const [envData, setEnvData] = useState(null)
-  const [taskData, setTaskData] = useState(null)
+  const [driversData,setDriversData]= useState({})
+  const [envsData, setEnvsData] = useState(null)
+  const [tasksData, setTasksData] = useState({})
 
   const [connection,setConnection] = useState(false)
-  const [waypointPosition, setWaypointPosition] = useState([])
-  const [timer, setTimer] = useState(0)
-
-  // const initialData = {
-  //   labels: ['1', '2', '3', '4', '5', '6'],
-  //   datasets: [{
-  //     label: '# of Votes',
-  //     data: [12, 19, 3, 5, 2, 3],
-  //   }]
-  // }
 
   const intialData2 = {
     labels: [],
@@ -150,11 +139,12 @@ function App() {
                 case 0: // environment data
                   setMessage(res.data)
                   break
-                case 1: // driver data
-                  setDriversData([res.data])
+                case 1: // driver and tasks data
+                  setDriversData(res.data)
                   //driversData2.current = [res.data]
                   break
                 case 2: // tasks data
+                  setEnvsData(res.data)
                   break
                 case 3: // roaming, picking up, fetching up count stats
                   // setTimeStamps([...timeStamps, res.data.time])
@@ -254,91 +244,9 @@ function App() {
                     }
                     setLineDataRegret(ldr)
                   }
-              }
-              break;
-            case 2:
-             // console.log(evt.data)
-              switch(res.command_second){
-                case 0: // random point
-                  // var command = [2,0,eId,dId,destinationPoint]
-                  // var asd = JSON.stringify(command)
-                  // ws.send(asd)
                   break;
-                case 1:
-                  // start, destination, and waypoint
-                  results = childRef.current.getStartEndWaypoint() // retrieve random start, random end and its waypoints
-                  command = [2,1,eId,dId,results[0],results[1],results[2]]
-                  console.log(command)
-                  socket.current.send(JSON.stringify(command))
-                  break;
-                case 2: // pathway between two points
-                  //console.log("[Console]Calculating pathway between "+res.data.lat_lngs[0] + " and "+res.data.lat_lngs[1])
-                  current_location = res.data.lat_lngs[0]
-                  destination = res.data.lat_lngs[1]
-                  var waypoint = childRef.current.getWaypoint(current_location.toString(),destination.toString())
-                  //console.log(waypoint)
-                  command = [2,2,eId,dId,waypoint]
-                  socket.current.send(JSON.stringify(command))
-                  break;
-                case 3: // create a node
-                  command = [2,3,eId,dId,true]
-                  var asd = JSON.stringify(command)
-                  socket.current.send(asd)
-                  break;
-                case 4: // driver move
-                  // current_location = res.data.lat_lngs[0]
-                  // destination = res.data.lat_lngs[1]
-                  // command = [2,4,eId,dId,destination]
-                  // var asd = JSON.stringify(command)
-                  // setTimeout(function(){ 
-                  //   if(socket.current != null){
-                  //     socket.current.send(asd)
-                  //   } 
-                  // }, 50); // 500 speed intially,then 100
-                  break;
-                case 5: // random destination and waypoint
-                  //console.log("[Console]Driver "+res.data.driver_id+" generating new randomness")
-                  results = childRef.current.getEndWaypoint(res.data.lat_lngs[0].toString())
-                  command = [2,5,eId,dId,res.data.lat_lngs[0],results[0],results[1]]
-                 // console.log(command)
-                  var asd = JSON.stringify(command)
-                  socket.current.send(asd)
-                  break;
-              }
-              break;
-            case 3:
-              switch(res.command_second){
-                case 1:
-                  // call quad tree function
-                  let pul = res.data.pick_up_coordinates
-                  let dol = res.data.drop_off_coordinates
-                  //console.log("Pick up location: "+pul +", Drop off location: "+dol)
-                  var updated_pul = childRef.current.getNearestNode(pul[0],pul[1])
-                  var updated_dol = childRef.current.getNearestNode(dol[0],dol[1])
-                  //console.log("New Pick up:"+updated_pul + ", New Drop off:"+updated_dol)
-                  var updated_pul_latlng = [updated_pul[1],updated_pul[0]].toString()
-                  var updated_dol_latlng = [updated_dol[1],updated_dol[0]].toString()
-                  var waypoint = childRef.current.getWaypoint(updated_pul_latlng,updated_dol_latlng)
-                  var distance = childRef.current.getDistance(updated_pul_latlng,updated_dol_latlng)
-                  if (waypoint.length > 0){
-                    command = [
-                      3,1,[
-                        parseFloat(updated_pul[1]),
-                        parseFloat(updated_pul[0])
-                      ],[
-                        parseFloat(updated_dol[1]),
-                        parseFloat(updated_dol[0])
-                      ],
-                      distance
-                    ]
-                  }else{
-                    // if no waypoint available, we return nil for updated pick up and drop off location
-                    command = [3,1,[],[],0]
-                  }
-                  var string_command = JSON.stringify(command)
-                  //console.log(string_command)
-                  socket.current.send(string_command)
-                  break;
+                case 5:
+                  setTasksData(res.data)
               }
               break;
               
@@ -466,22 +374,13 @@ function App() {
   const taskRef = useRef();
   const dispatchRef = useRef();
   const classes = useStyles();
-  /**
-   *   <MapboxGLMap 
-                  driversData={driversData} 
-                  envData={envData}
-                  taskData={taskData} 
-                  waypointPosition={waypointPosition} 
-                  ref={childRef}/> 
-   * 
-   */
   return (
     <div>
        
        <div className={classes.root}>
         <Grid container spacing={1}>
           <Grid item xs={7} style={{height:"55vh"}}>
-            <DeckGLMap driversData={driversData}/>
+            <DeckGLMap driversData={driversData} envsData={envsData} tasksData={tasksData}/>
           </Grid>
           <Grid item xs={5}>
             <div>

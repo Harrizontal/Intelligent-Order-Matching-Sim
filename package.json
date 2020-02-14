@@ -10,7 +10,7 @@
     "chart.js": "^2.9.3",
     "chartjs-plugin-streaming": "^1.8.0",
     "d3": "^5.15.0",
-    "deck.gl": "^8.0.13",
+    "deck.gl": "^8.0.14",
     "leaflet": "^1.5.1",
     "lodash": "^4.17.15",
     "mapbox-gl": "^1.6.1",

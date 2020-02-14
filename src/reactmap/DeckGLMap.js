@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import DeckGL, { IconLayer,LineLayer,ScatterplotLayer } from "deck.gl";
+import DeckGL, { IconLayer,LineLayer,ScatterplotLayer ,PolygonLayer} from "deck.gl";
 import { EditableGeoJsonLayer, DrawPolygonMode } from 'nebula.gl';
 import { StaticMap } from "react-map-gl";
 import * as d3 from "d3"
@@ -26,6 +26,7 @@ const myFeatureCollection = {
 
 const selectedFeatureIndexes = [];
 
+
 const COLOURS = {
     RED: [220, 20, 60], // crimison
     PURPLE: [138,43,226], // purple (blueviolet)
@@ -40,9 +41,9 @@ class DeckGLMap extends Component {
     constructor(props){
         super(props);
         this.state = {
-            airplanes: [],
-            viewport: {},
             drivers: [],
+            environments: [],
+            tasks: [],
             data: myFeatureCollection
         }
     }
@@ -52,39 +53,26 @@ class DeckGLMap extends Component {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps){
-        //console.log("componentWillReceiveProps", nextProps);
-        console.log(nextProps.driversData[0].features)
+        console.log("componentWillReceiveProps", nextProps);
+        //console.log(nextProps.driversData[0].features)
         this.setState({
-            drivers: nextProps.driversData[0].features
+            drivers: nextProps.driversData.features  ? nextProps.driversData.features : [],
+            environments: nextProps.envsData.features ? nextProps.envsData.features: [],
+            tasks: nextProps.tasksData.features ? nextProps.tasksData.features: []
         })
     }
 
-    // fetchData = () =>{
-    //     console.log("fetching data")
-    //     d3.json("https://opensky-network.org/api/states/all").then(
-    //         ({states}) => 
-    //             this.setState({
-    //                 airplanes: states.map(d => ({
-    //                     callsign: d[1],
-    //                     longitude: d[5],
-    //                     latitude: d[6],
-    //                     velocity: d[9],
-    //                     altitude: d[13],
-    //                     origin_country: d[2],
-
-    //                 }))
-    //             })
-    //     );
-    //     setTimeout(this.fetchData, 10*1000)
-    // }
 
     clearData = () => {
         const {dispatch} = this.props;
         console.log(this.state.data)
-        dispatch({
-            type: "SET_POLYGON",
-            polygon_coordinates: this.state.data.features[0].geometry.coordinates[0]
-        })
+       
+            dispatch({
+                type: "SET_POLYGON",
+                polygon_coordinates: this.state.data.features[0].geometry.coordinates[0]
+            })
+        
+        
 
         this.setState({
             data: myFeatureCollection
@@ -94,8 +82,33 @@ class DeckGLMap extends Component {
 
     render (){
         const layers = [
+            new PolygonLayer({
+                id: 'polygon-layer',
+                data: this.state.environments,
+                pickable: true,
+                stroked: true,
+                filled: true,
+                wireframe: true,
+                lineWidthMinPixels: 1,
+                getPolygon: d => d.geometry.coordinates,
+                getElevation: d => 3,
+                getFillColor: d => [60, 140, 0,0],
+                getLineColor: [0, 0, 0,80],
+                getLineWidth: 2
+            }),
             new ScatterplotLayer({
-                id: 's-a',
+                id: 'driver-scatter-layer',
+                data: this.state.tasks,
+                pickable: false,
+                opacity: 0.7,
+                radiusMinPixels: 2,
+                radiusMaxPixels: 15,
+                getPosition: d => [d.geometry.coordinates[0], d.geometry.coordinates[1]],
+                getColor: COLOURS.BLACK,
+                getRadius: 2
+            }),
+            new ScatterplotLayer({
+                id: 'task-scatter-layer',
                 data: this.state.drivers,
                 pickable: false,
                 opacity: 0.8,
