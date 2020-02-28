@@ -1,34 +1,15 @@
-import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
+import React, { useState, useImperativeHandle, forwardRef } from "react";
 import ReactDOM from 'react-dom';
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-
-const useStyles = makeStyles({
-    title: {
-      fontSize: 14,
-      marginBottom: 15,
-    },
-    title2: {
-      fontSize: 14,
-      marginTop: 15,
-      marginBottom: 15,
-    },
-    pos: {
-      marginBottom: 12,
-    },
-  });
-
+import Card from 'react-bootstrap/Card'
+import Form from 'react-bootstrap/Form'
+import Col from 'react-bootstrap/Col'
 
 const TaskSetting = forwardRef((props,ref) => {
-    const classes = useStyles();
     const [taskValueType,setTaskValueType] = useState("distance")
     const [taskValue,setTaskValue] = useState(3)
     const [peakValue, setPeakValue] = useState(1.5)
-    const [reputationGivenType, setReputationGivenType] = useState("random")
-    const [reputationValue, setReputationValue] = useState("nil")
+    const [reputationGivenType, setReputationGivenType] = useState("fixed")
+    const [reputationValue, setReputationValue] = useState(5)
 
     useImperativeHandle(ref, () => ({
       getTaskParameters(){
@@ -53,7 +34,6 @@ const TaskSetting = forwardRef((props,ref) => {
       console.log(taskValue)
     }
     
-
     const changeReputationGivenType = (e) => {
       setReputationGivenType(e.target.value)
       switch(e.target.value){
@@ -67,54 +47,45 @@ const TaskSetting = forwardRef((props,ref) => {
     }
 
     return (
-        <Card>
-            <CardContent>
-              <Typography className={classes.title} color="textSecondary" gutterBottom>
-              Task Parameters
-              </Typography>
-              <Grid container direction="column" spacing={2} align>
-                <Grid item container direction="row" xs={12}>
-                  <Grid item xs={6}>Task Value Type</Grid>
-                  <Grid item xs={6}>
-                  <select value={taskValueType} onChange={changeTaskValueType}>
-                    <option value="random">Random</option>
-                    <option value="distance">Waypoint distance</option>
-                  </select>
-                  </Grid>
-                </Grid>
-                <Grid item container direction="row">
-                  <Grid item xs={6}>Value per 1km (Multiplier)</Grid>
-                  <Grid item xs={6}>
-                    <input type="text" value={taskValue} onChange={e => setTaskValue(e.target.value)}/>
-                  </Grid>
-                </Grid>
-                <Grid item container direction="row">
-                  <Grid item xs={6}>Peak hour rate (Multipler)</Grid>
-                  <Grid item xs={6}>
-                    <input type="text" value={peakValue} onChange={e => setPeakValue(e.target.value)}/>
-                  </Grid>
-                </Grid>
-                <Grid item container direction="row">
-                  <Grid item xs={6}>Reputation given type</Grid>
-                  <Grid item xs={6}>
-                  <select value={reputationGivenType} onChange={changeReputationGivenType}>
+      <Card style={{margin:"1% 1% 1% 1%"}}>
+        <Card.Header>Task</Card.Header>
+        <Card.Body>
+          <Card.Text>
+              <Form.Group controlId="exampleForm.ControlSelect1">
+                <Form.Label>Type of Value for Task</Form.Label>
+                <Form.Control as="select" size="sm" value={taskValueType} onChange={changeTaskValueType}>
+                  <option value="random">Random</option>
+                  <option value="distance">Distance between start and end</option>
+                </Form.Control>
+              </Form.Group>
+
+              <Form.Group controlId="formPerKm">
+                <Form.Label>Value per 1km (Multiplier)</Form.Label>
+                <Form.Control size="sm" type="text" placeholder="5" value={taskValue} onChange={e => setTaskValue(e.target.value)}/>
+              </Form.Group>
+
+              <Form.Group controlId="formPeak">
+                <Form.Label>Peak hour rate (Multipler)</Form.Label>
+                <Form.Control size="sm" type="text" placeholder="5" value={peakValue} onChange={e => setPeakValue(e.target.value)}/>
+              </Form.Group>
+              
+              <Form.Row>
+                <Form.Group as={Col} controlId="exampleForm.ControlSelect1">
+                  <Form.Label>Type of Reputation given by Task</Form.Label>
+                  <Form.Control as="select" size="sm" value={reputationGivenType} onChange={changeReputationGivenType}>
                     <option value="random">Random (0 - 5)</option>
                     <option value="fixed">Fixed</option>
-                  </select>
-                  </Grid>
-                </Grid>
-                <Grid item container direction="row">
-                  <Grid item xs={6}>Reputation value (0-5)</Grid>
-                  <Grid item xs={6}>
-                    <input type="text" value={reputationValue} disabled={reputationGivenType == "random"}/>
-                  </Grid>
-                </Grid>
-              </Grid>
-              {/* <Typography className={classes.title2} color="textSecondary" gutterBottom>
-              Driver Paramaters
-              </Typography> */}
-            </CardContent>
-        </Card>
+                  </Form.Control>
+                </Form.Group>
+
+                <Form.Group as={Col} controlId="formPeak">
+                  <Form.Label>Reputation value (0-5)</Form.Label>
+                  <Form.Control size="sm" type="text" placeholder="5" value={reputationValue} disabled={reputationGivenType == "random"}/>
+                </Form.Group>
+              </Form.Row>
+          </Card.Text>
+        </Card.Body>
+      </Card>
     )
 })
 

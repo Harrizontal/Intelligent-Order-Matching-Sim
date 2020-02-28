@@ -1,6 +1,7 @@
 import {combineReducers} from 'redux';
-import {mapDrawReducer} from './drawmap'
+import {mapDrawReducer,mapSettingsReducer} from './drawmap'
 
 export default combineReducers({
-    mapDraw: mapDrawReducer
+    mapDraw: mapDrawReducer,
+    mapSettings: mapSettingsReducer
 })

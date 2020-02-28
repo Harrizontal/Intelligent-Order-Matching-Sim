@@ -38,11 +38,22 @@ export const mapDrawReducer = (state = {mapDraw: null, polygon_coordinates: null
                 polygon_coordinates: action.polygon_coordinates
             }
         case 'DELETE_POLYGON':
-            console.log(state.mapDraw)
-            state.mapDraw.deleteAll()
             return {
                 ...state,
                 polygon_coordinates: null
+            }
+        default:
+            return state
+    }
+}
+
+export const mapSettingsReducer = (state = {setVirus: true, test: "test", type:1}, action) => {
+    switch(action.type){
+        case 'SET_TYPE':
+            console.log(action.payload)
+            return {
+                ...state,
+                type: action.payload
             }
         default:
             return state

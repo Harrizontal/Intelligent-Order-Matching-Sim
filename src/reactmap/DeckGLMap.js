@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import DeckGL, { IconLayer,LineLayer,ScatterplotLayer ,PolygonLayer} from "deck.gl";
 import { EditableGeoJsonLayer, DrawPolygonMode } from 'nebula.gl';
 import { StaticMap } from "react-map-gl";
-import * as d3 from "d3"
 import { connect } from 'react-redux'
 
 const MAPBOX_ACCESS_TOKEN =
@@ -27,7 +26,7 @@ const myFeatureCollection = {
 const selectedFeatureIndexes = [];
 
 
-const COLOURS = {
+const STATUS_COLOURS = {
     RED: [220, 20, 60], // crimison
     PURPLE: [138,43,226], // purple (blueviolet)
     BLUE: [30,144,255], // dodgerblue
@@ -35,6 +34,28 @@ const COLOURS = {
     GREEN: [0, 128, 0], // green
     BLACK: [0,0,0] // black
 };
+
+const VIRUS_COLOURS = {
+    DRIVERS: {
+        NONE: [0, 204, 102], // crimison
+        MILD: [255,153,153], // purple (blueviolet)
+        MODERATE: [255,51,51], // dodgerblue
+        SEVERE: [102,0,0]
+    },
+    TASKS: {
+        NONE: [0, 204, 102], // crimison
+        MILD: [255,153,153], // purple (blueviolet)
+        MODERATE: [255,51,51], // dodgerblue
+        SEVERE: [102,0,0]
+    }
+};
+
+
+function mapStateToProps(state) {
+    return {
+      mapSettings: state.mapSettings
+    };
+  }
 
 class DeckGLMap extends Component {
 
@@ -44,7 +65,10 @@ class DeckGLMap extends Component {
             drivers: [],
             environments: [],
             tasks: [],
-            data: myFeatureCollection
+            data: myFeatureCollection,
+            tasks_colours: {},
+            drivers_colours: {},
+            polygon_colours: {}
         }
     }
 
@@ -67,20 +91,40 @@ class DeckGLMap extends Component {
         const {dispatch} = this.props;
         console.log(this.state.data)
        
-            dispatch({
-                type: "SET_POLYGON",
-                polygon_coordinates: this.state.data.features[0].geometry.coordinates[0]
-            })
+        dispatch({
+            type: "SET_POLYGON",
+            polygon_coordinates: this.state.data.features[0].geometry.coordinates[0]
+        })
         
-        
-
         this.setState({
             data: myFeatureCollection
         })
     }
     
+    _renderTooltip() {
+        const {hoveredType, hoveredObject, pointerX, pointerY} = this.state || {};
+
+        switch(hoveredType){
+            case 'driver':
+                return hoveredObject && (
+                    <div style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: pointerX, top: pointerY}}>
+                     <p style={{margin:0,padding:0}}><b>Driver {hoveredObject.properties.information.id} </b></p>
+                    </div>
+                  );
+            case 'task':
+                return hoveredObject && (
+                    <div style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: pointerX, top: pointerY}}>
+                     <p style={{margin:0,padding:0}}><b>Task {hoveredObject.properties.information.id} </b></p>
+                    </div>
+                  );
+
+        }
+       
+      }
 
     render (){
+        const {mapSettings} = this.props;
+        
         const layers = [
             new PolygonLayer({
                 id: 'polygon-layer',
@@ -97,55 +141,98 @@ class DeckGLMap extends Component {
                 getLineWidth: 2
             }),
             new ScatterplotLayer({
-                id: 'driver-scatter-layer',
+                id: 'task-scatter-layer',
                 data: this.state.tasks,
-                pickable: false,
+                pickable: true,
                 opacity: 0.7,
                 radiusMinPixels: 2,
-                radiusMaxPixels: 15,
-                getPosition: d => [d.geometry.coordinates[0], d.geometry.coordinates[1]],
-                getColor: COLOURS.BLACK,
-                getRadius: 2
-            }),
-            new ScatterplotLayer({
-                id: 'task-scatter-layer',
-                data: this.state.drivers,
-                pickable: false,
-                opacity: 0.8,
-                radiusMinPixels: 3,
-                radiusMaxPixels: 20,
+                radiusMaxPixels: 10,
                 getPosition: d => [d.geometry.coordinates[0], d.geometry.coordinates[1]],
                 getColor: d => {
-                    switch(d.properties.information.type){
-                        case 'Driver':
+                    switch(mapSettings.type){
+                        case 1:
+                            return STATUS_COLOURS.BLACK
+                        case 2:
+                            switch(d.properties.information.virus){
+                                case 0: // roaming
+                                    return VIRUS_COLOURS.TASKS.NONE
+                                case 1: // matching
+                                    return VIRUS_COLOURS.TASKS.MILD
+                                case 2: // fetching
+                                    return VIRUS_COLOURS.TASKS.MODERATE
+                                case 3: // travelling
+                                    return VIRUS_COLOURS.TASKS.SEVERE
+                            }
+                    }
+                },
+                getRadius: 2,
+                onHover: info => this.setState({
+                    hoveredType:"task",
+                    hoveredObject: info.object,
+                    pointerX: info.x,
+                    pointerY: info.y
+                  })
+            }),
+            new ScatterplotLayer({
+                id: 'driver-scatter-layer',
+                data: this.state.drivers,
+                pickable: true,
+                opacity: 0.8,
+                radiusMinPixels: 3,
+                radiusMaxPixels: 10,
+                getPosition: d => [d.geometry.coordinates[0], d.geometry.coordinates[1]],
+                getColor: d => {
+                    switch(mapSettings.type){
+                        case 1:
                             switch(d.properties.information.status){
                                 case 0: // roaming
-                                    return COLOURS.RED
+                                    return STATUS_COLOURS.RED
                                 case 1: // matching
-                                    return COLOURS.BLUE
+                                    return STATUS_COLOURS.BLUE
                                 case 2: // fetching
-                                    return COLOURS.YELLOW
+                                    return STATUS_COLOURS.YELLOW
                                 case 3: // travelling
-                                    return COLOURS.GREEN
-                                case 4: // allocating
-                                    return COLOURS.RED 
+                                    return STATUS_COLOURS.GREEN
+                                case 4:
+                                    return STATUS_COLOURS.RED
                             }
-                        case 'Task':
-                            return COLOURS.BLACK
+                        case 2:
+                            switch(d.properties.information.virus){
+                                case 0: // roaming
+                                    return VIRUS_COLOURS.DRIVERS.NONE
+                                case 1: // matching
+                                    return VIRUS_COLOURS.DRIVERS.MILD
+                                case 2: // fetching
+                                    return VIRUS_COLOURS.DRIVERS.MODERATE
+                                case 3: // travelling
+                                    return VIRUS_COLOURS.DRIVERS.SEVERE
+                            }
                     }
                     
                 },
-                getRadius: 3
+                getRadius: 3,
+                onHover: info => this.setState({
+                    hoveredType:"driver",
+                    hoveredObject: info.object,
+                    pointerX: info.x,
+                    pointerY: info.y
+                  })
             }),
             new EditableGeoJsonLayer({
                 id: 'geojson-layer',
                 data: this.state.data,
                 mode: DrawPolygonMode,
                 selectedFeatureIndexes,
-                onEdit: ({updatedData})=>{
+                onEdit: ({updatedData,editType})=>{
+                    console.log(editType)
+
                     this.setState({
                         data: updatedData
                     })
+                    if (editType == 'addFeature'){
+                        this.clearData()
+                    }
+                    
                 }
             })
         ]
@@ -180,14 +267,15 @@ class DeckGLMap extends Component {
                 <DeckGL
                     style={{position:"relative"}}
                     width="100%"
-                    height="90%"
+                    height="100%"
                     initialViewState={initialViewState}
                     controller={true}
                     layers={layers}
                 >
+                    
                     <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}/>
                 </DeckGL>
-                <a href="#" onClick={this.clearData} style={{zIndex: 5}}>Clear polygon</a>
+                { this._renderTooltip() }
             </div>
             
             
@@ -195,4 +283,4 @@ class DeckGLMap extends Component {
     }
 }
 
-export default connect()(DeckGLMap)
+export default connect(mapStateToProps)(DeckGLMap)

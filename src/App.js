@@ -1,71 +1,152 @@
 import React, { useState,useEffect,useRef } from "react";
 import "./App.css";
-import MapboxGLMap from "./reactmap/MapboxGLMap"
 import {useDispatch, useSelector} from 'react-redux';
-import {increment} from './actions'
 import _ from 'lodash'
-import {Button} from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
+import Button from 'react-bootstrap/Button';
+import Tabs from 'react-bootstrap/Tabs'
+import Tab from 'react-bootstrap/Tab'
+import Card from 'react-bootstrap/Card'
+import Col from 'react-bootstrap/Col'
+import Row from 'react-bootstrap/Row'
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import {Line} from "react-chartjs-2"
-import "chartjs-plugin-streaming";
 
-import SimSettings from './SimSettings'
+import Terminal from './Terminal'
+import MapSettings from './MapSettings'
 import EnvSettings from "./EnvSettings";
 import TaskSettings from "./TaskSettings"
 import DispatcherParameters from "./DispatcherParameters";
 
-import StreamingChart from "./chart/StreamingChart"
 import DeckGLMap from "./reactmap/DeckGLMap"
+import VirusParameters from "./VirusParameters";
 
 
 function App() {
   const dispatch = useDispatch()
-  const [message,setMessage] = useState(null)
+  const [message,setMessage] = useState([])
   const [driversData,setDriversData]= useState({})
-  const [envsData, setEnvsData] = useState(null)
+  const [envsData, setEnvsData] = useState({})
   const [tasksData, setTasksData] = useState({})
 
   const [connection,setConnection] = useState(false)
 
-  const intialData2 = {
+  const intialData = {
     labels: [],
     datasets: [
       {
-        label: 'Roaming Drivers',
+        label: 'Roaming',
         fill: false,
         data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(255,0,0,1)',
+        backgroundColor: 'rgba(255,0,0,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
       },
       {
-        label: 'Picking Up',
+        label: 'Picking',
         fill: false,
-        data: []
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(235,249,17,1)',
+        backgroundColor: 'rgba(235,249,17,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
       },
       {
-        label: 'Fetching to location',
+        label: 'Fetching',
         fill: false,
-        data: []
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: 'rgba(75,192,192,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
       }]
   }
 
-  const intialData = {
+  const intialData2 = {
       labels: [],
       datasets: []
-    }
+  }
 
-  const [lineData, setLineData] = useState(intialData2)
-  const [lineDataRegret, setLineDataRegret] = useState(intialData)
+  const initialDataVirus = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Tasks to Drivers',
+        fill: false,
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(255,0,0,1)',
+        backgroundColor: 'rgba(255,0,0,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
+      },
+      {
+        label: 'Drivers to Tasks',
+        fill: false,
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(235,249,17,1)',
+        backgroundColor: 'rgba(235,249,17,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
+      }
+    ]
+  }
+
+  const initialDataEarning = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Max',
+        fill: false,
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(255,0,0,1)',
+        backgroundColor: 'rgba(255,0,0,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
+      },
+      {
+        label: 'Average',
+        fill: false,
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(235,249,17,1)',
+        backgroundColor: 'rgba(235,249,17,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
+      },
+      {
+        label: 'Min',
+        fill: false,
+        data: [],
+        lineTension: 0.1,
+        borderColor: 'rgba(75,192,192,1)',
+        backgroundColor: 'rgba(75,192,192,1)',
+        borderDashOffset: 0.0,
+        borderDash: []
+      }
+    ]
+  }
+
+  const [lineData, setLineData] = useState(intialData)
+  const [lineDataRegret, setLineDataRegret] = useState(intialData2)
+  const [lineDataVirus, setLineDataVirus] = useState(initialDataVirus)
+  const [lineDataEarning, setLineDataEarning] = useState(initialDataEarning)
 
   const [ws, setWebSocket] = useState(null)
 
   function intializeOrder(){
     socket.current.send("[3,0]")
+  }
+
+  function generatecsv(){
+    socket.current.send("[3,1]")
   }
  
   function retrieveOrders(){
@@ -74,22 +155,10 @@ function App() {
 
   //TODO: 
   function sendParamaters(){
-    // var obj = [0,1,{
-    //   task_parameters: {
-    //     task_value_type: "distance",
-    //     value_per_km: 3,
-    //     peak_hour_rate: 1.5,
-    //     reputation_given_type: "random",
-    //     reputation_value: 5
-    //   },
-    //   dispatcher_parameters:{
-    //     dispatcher_interval: 5000,
-    //     similiar_reputation: 1.5
-    //   }
-    // }]
     var obj = [0,1,{
       task_parameters: taskRef.current.getTaskParameters() ,
-      dispatcher_parameters: dispatchRef.current.getDispatchParameters()
+      dispatcher_parameters: dispatchRef.current.getDispatchParameters(),
+      virus_parameters: virusRef.current.getVirusParameters()
     }]
     var data = JSON.stringify(obj)
     console.log(obj)
@@ -103,6 +172,10 @@ function App() {
     scales: {
       xAxes: [
         {
+          scaleLabel: {
+            display: true,
+            labelString: "Status of Driver"
+          },
           ticks: {
             autoSkip: true,
             maxTicksLimit: 10
@@ -122,12 +195,99 @@ function App() {
       ]
     }
   }
+
+
+  const lineChartOptionsEarning = {
+    scales: {
+      xAxes: [
+        {
+          scaleLabel: {
+            display: true,
+            labelString: "Total Earnings of Drivers"
+          },
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 10
+          }
+        }
+      ],
+      yAxes: [
+        {
+          display: true,
+          ticks: {
+            beginAtZero:true,
+            suggestedMax: 5,
+            min: 0,
+            stepSize: 1  
+          }
+        }
+      ]
+    }
+  }
+
+  const lineChartOptionsVirus= {
+    scales: {
+      xAxes: [
+        {
+          scaleLabel: {
+            display: true,
+            labelString: "Spread count of virus"
+          },
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 10
+          }
+        }
+      ],
+      yAxes: [
+        {
+          display: true,
+          ticks: {
+            beginAtZero:true,
+            suggestedMax: 5,
+            min: 0,
+            stepSize: 1  
+          }
+        }
+      ]
+    }
+  }
+
+  const lineChartOptionsRegret= {
+    scales: {
+      xAxes: [
+        {
+          scaleLabel: {
+            display: true,
+            labelString: "Regret of Drivers"
+          },
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 10
+          }
+        }
+      ],
+      yAxes: [
+        {
+          display: true,
+          ticks: {
+            beginAtZero:true,
+            suggestedMax: 5,
+            min: 0,
+            stepSize: 1  
+          }
+        }
+      ]
+    }
+  }
+
+  // let lineChartOptionsEarning = {...lineChartOptions}
+  // //console.log(lineChartOptionsEarning.scales.xAxes[0].scaleLabel)
+  // lineChartOptionsEarning.scales.xAxes[0].scaleLabel.labelString = 
+
   useEffect(() => {
     if (socket.current != null){
-      //console.log("Listening")
       socket.current.onmessage = (evt) => {
-        // try {
-          let command,current_location,destination,results;
           var res = JSON.parse(evt.data)
           var eId = res.data.environment_id // environment Id
           var dId = res.data.driver_id // driver Id
@@ -137,18 +297,18 @@ function App() {
               //console.log(res.data)
               switch(res.command_second){
                 case 0: // environment data
-                  setMessage(res.data)
+                  setMessage(prevArray => [res.data, ...prevArray])
                   break
                 case 1: // driver and tasks data
                   setDriversData(res.data)
-                  //driversData2.current = [res.data]
                   break
                 case 2: // tasks data
                   setEnvsData(res.data)
                   break
-                case 3: // roaming, picking up, fetching up count stats
-                  // setTimeStamps([...timeStamps, res.data.time])
-                  // setRdata([...rData,res.data.no_of_roaming_drivers])
+                case 3:
+                  setTasksData(res.data)
+                  break;
+                case 4: // roaming, picking up, fetching up count stats
                   const roamingData = lineData.datasets[0].data
                   const pickingData = lineData.datasets[1].data
                   const fetchingData = lineData.datasets[2].data
@@ -163,46 +323,20 @@ function App() {
                     fetchingData.shift()
                   }
                   
-                  const newLineData =
-                  {
-                    labels: timeLabels,
-                    datasets: [
-                      {
-                        label: 'Roaming Drivers',
-                        fill: false,
-                        data: roamingData,
-                        lineTension: 0.1,
-                        borderColor: 'rgba(255,0,0,1)',
-                        backgroundColor: 'rgba(255,0,0,1)',
-                        borderDashOffset: 0.0,
-                        borderDash: []
-                      },
-                      {
-                        label: 'Picking Up',
-                        fill: false,
-                        data: pickingData,
-                        lineTension: 0.1,
-                        borderColor: 'rgba(235,249,17,1)',
-                        backgroundColor: 'rgba(235,249,17,1)',
-                        borderDashOffset: 0.0,
-                        borderDash: []
-                      },
-                      {
-                        label: 'Fetching to location',
-                        fill: false,
-                        data: fetchingData,
-                        lineTension: 0.1,
-                        borderColor: 'rgba(75,192,192,1)',
-                        backgroundColor: 'rgba(75,192,192,1)',
-                        borderDashOffset: 0.0,
-                        borderDash: []
-                      }]
-                  }
-                  setLineData(newLineData)
+                  const newLineDataStatus = lineData
+                  newLineDataStatus.labels = timeLabels
+                  newLineDataStatus.datasets[0].data = roamingData
+                  newLineDataStatus.datasets[1].data = pickingData
+                  newLineDataStatus.datasets[2].data = fetchingData
+                  setLineData(newLineDataStatus)
                   break
-                case 4:
+                case 5:
+                  
                   const ldr = lineDataRegret
                   let drivers_regret = res.data.drivers_regret
+                  if (drivers_regret.length > 20){
+                    break
+                  }
                   // console.log(res.data)
                   // console.log(ldr)
                   // console.log("Total drivers: "+drivers_regret.length)
@@ -212,7 +346,6 @@ function App() {
                     ldr.labels.shift()
                   }
                   if (ldr.datasets.length == 0){
-                    // console.log("Accessing coz 0")
                     for (let k = 0; k < drivers_regret.length; k++){
                       let color = "rgba("+Math.floor(Math.random() * 255)+","+Math.floor(Math.random() * 255)+","+Math.floor(Math.random() * 255)+",1)"
                       let dr = {
@@ -226,7 +359,6 @@ function App() {
                         borderDash: []
                       }
                       dr.data.push(drivers_regret[k].regret)
-                      //console.log(dr)
                       ldr.datasets.push(dr)
                     }
                     setLineDataRegret(ldr)
@@ -245,16 +377,51 @@ function App() {
                     setLineDataRegret(ldr)
                   }
                   break;
-                case 5:
-                  setTasksData(res.data)
+                case 6:
+                  const ttdData = lineDataVirus.datasets[0].data // task to drivers
+                  const dttData = lineDataVirus.datasets[1].data // drivers to task
+                  ttdData.push(res.data.tasks_to_drivers)
+                  dttData.push(res.data.drivers_to_tasks)
+                  const timeLabelsVirus = lineDataVirus.labels.concat(res.data.time)
+                  if (ttdData.length > 15){
+                    timeLabelsVirus.shift()
+                    ttdData.shift()
+                    dttData.shift()
+                  }
+                  
+                  let newLineDataVirus = lineDataVirus
+                  newLineDataVirus.labels = timeLabelsVirus
+                  newLineDataVirus.datasets[0].data = ttdData
+                  newLineDataVirus.datasets[1].data = dttData
+                  setLineDataVirus(newLineDataVirus)
+                  break
+                case 7:
+                  const maxData = lineDataEarning.datasets[0].data
+                  const averageData = lineDataEarning.datasets[1].data 
+                  const minData = lineDataEarning.datasets[2].data 
+                  maxData.push(res.data.max_earning)
+                  averageData.push(res.data.average_earning)
+                  minData.push(res.data.min_earning)
+                  const timeLabelsEarning = lineDataEarning.labels.concat(res.data.time)
+                  if (maxData.length > 15){
+                    timeLabelsEarning.shift()
+                    maxData.shift()
+                    averageData.shift()
+                    minData.shift()
+                  }
+                  
+                  let newLineDataEarning = lineDataEarning
+                  newLineDataEarning.labels = timeLabelsEarning
+                  newLineDataEarning.datasets[0].data = maxData
+                  newLineDataEarning.datasets[1].data = averageData
+                  newLineDataEarning.datasets[2].data = minData
+                  setLineDataEarning(newLineDataEarning)
+                  break
+                case 8:
+                  break
               }
               break;
-              
           }
-        // }catch(err){
-        //   console.log(evt)
-        //   console.log("Error: "+err)
-        // }
       }
     }
   })
@@ -276,27 +443,19 @@ function App() {
         socket.current.close()
         socket.current = null
         setConnection(false)
-        setMessage("")
+        setMessage([])
         //childRef.current.resetMap()
-        setLineData(intialData2)
-        setLineDataRegret(intialData)
+        setLineData(intialData)
+        setLineDataRegret(intialData2)
+        setLineDataVirus(initialDataVirus)
+        setLineDataEarning(initialDataEarning)
+        setDriversData({})
+        setEnvsData({})
+        setTasksData({})
     }
   }
 
 
-  const useStyles = makeStyles(theme => ({
-    root: {
-      flexGrow: 1,
-    },
-    paper: {
-      padding: theme.spacing(1),
-      textAlign: 'center',
-      color: theme.palette.text.secondary,
-    },
-    title: {
-      fontSize: 14,
-    },
-  }));
   
   const ConnectButton = (props) => {
     if(props.connection){
@@ -306,115 +465,54 @@ function App() {
     }
   }
 
-  // const [timeStamps, setTimeStamps] = useState([])
-  // const [rData, setRdata] = useState([])
-  // const initialDataTest = {
-  //   datasets: [
-  //       {
-  //       label: "Dataset 1",
-  //       borderColor: "rgb(255, 99, 132)",
-  //       backgroundColor: "rgba(255, 99, 132, 0.5)",
-  //       lineTension: 0,
-  //       borderDash: [8, 4],
-  //       data: [
-  //         {x: '2019-02-01 09:30:15', y: -0.11700000},
-  //         {x: '2019-02-01 09:50:20', y: -0.14400000}
-  //       ]
-  //       }
-  //   ]
-  // };
-
-  // function updateChartData(){
-  //   if (rData.length > 0){
-  //     console.log(rData[rData.length - 1])
-  //   }
-  //   // data2.datasets[0].data.push({
-  //   //   x: Date.now(),
-  //   //   y: Math.random() * 100
-  //   // });
-  // }
-  
-  // const options2 = {
-  //   scales: {
-  //     xAxes: [
-  //       {
-  //         type: "realtime",
-  //         realtime: {
-  //           onRefresh: function(){
-  //             if (rData.length > 0 && timeStamps.length > 0){
-  //               console.log(rData[rData.length - 1])
-  //               var timeStamp = timeStamps[timeStamps.length - 1]
-  //               var roamingData = rData[rData.length - 1]
-  //               data2.datasets[0].data.push({
-  //                 x: Date.now(),
-  //                 y: roamingData
-  //               });
-  //             }
-  //           },
-  //           delay: 1000
-  //         }
-  //       }
-  //     ],
-  //     yAxes: [{
-  //       display: true,
-  //       ticks: {
-  //         beginAtZero:true,
-  //         suggestedMax: 5,
-  //         min: 0,
-  //         stepSize: 1  
-  //       }
-  //     }]
-  //   }
-  // };
-
-  // const [data2, setData2] = useState(initialDataTest)
-  
-
-  const childRef = useRef();
   const taskRef = useRef();
   const dispatchRef = useRef();
-  const classes = useStyles();
+  const virusRef = useRef();
   return (
-    <div>
+    <div style={{display:"flex", flexDirection:"row"}}>
+      <div style={{height:"100vh",width:"55vw"}}>
+       <DeckGLMap driversData={driversData} envsData={envsData} tasksData={tasksData}/>
+      </div>
+      <div style={{height:"100vh",width:"45vw"}}>
+      <Tabs defaultActiveKey="control" id="uncontrolled-tab-example" style={{marginTop: "5px"}}>
+        <Tab eventKey="control" title="Control">
+          <Terminal data={message}/>
+          <EnvSettings ws={socket}/>
+          <Card style={{margin:"1%"}}>
+            <Card.Header>Main</Card.Header>
+            <Card.Body>
+              <Card.Text>
+                  <ConnectButton connection={connection} style={{marginLeft:"1%", marginRight:"1%"}}/>
+                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={sendParamaters} size="small">Submit Paramaters</Button>
+                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={retrieveOrders} size="small">Retrieve Orders</Button>
+                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={intializeOrder} size="small">Start</Button>
+                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={generatecsv} size="small">Generate CSV</Button>
+              </Card.Text>
+            </Card.Body>
+          </Card>
+         
+        </Tab>
+        <Tab eventKey="general" title="General">
+          <TaskSettings ws={socket} ref={taskRef}/>
+          <DispatcherParameters ws={socket} ref={dispatchRef}/>
+        </Tab>
+        <Tab eventKey="virus" title="Virus">
+          <VirusParameters ws={socket} ref={virusRef}/>
+        </Tab>
+        <Tab eventKey="overviewchart" title="Overview Chart" style={{padding:"1%"}}>
+          <Line data={lineData} options={lineChartOptions} width="auto" height="100"/>
+          <Line data={lineDataEarning} options={lineChartOptionsEarning} width="auto" height="100"/>
+          <Line data={lineDataVirus} options={lineChartOptionsVirus} width="auto" height="100"/>
+        </Tab>
+        <Tab eventKey="driverchart" title="Driver Chart" style={{padding:"1%"}}>
+          <Line data={lineDataRegret} options={lineChartOptionsRegret} width="auto" height="auto"/>
+        </Tab>
+        <Tab eventKey="display" title="Display" >
+          <MapSettings/>
+        </Tab>
+      </Tabs>
        
-       <div className={classes.root}>
-        <Grid container spacing={1}>
-          <Grid item xs={7} style={{height:"55vh"}}>
-            <DeckGLMap driversData={driversData} envsData={envsData} tasksData={tasksData}/>
-          </Grid>
-          <Grid item xs={5}>
-            <div>
-              <Line data={lineData} options={lineChartOptions} height="auto"/>
-              {/* <Line data={lineDataRegret} options={lineChartOptions} height="auto"/> */}
-            </div>
-            {/* <Line data={data2} options={options2}/> */}
-            {/* <StreamingChart/> */}
-          </Grid>
-          <Grid item xs={3}>
-            <TaskSettings ws={socket} ref={taskRef}/>
-          </Grid>
-          <Grid item xs={3}>
-            <DispatcherParameters ws={socket} ref={dispatchRef}/>
-          </Grid>
-          <Grid item xs={3}>
-            <EnvSettings ws={socket}/>
-          </Grid>
-          <Grid item xs={3}>
-            <Card>
-                <CardContent>
-                    <Typography className={classes.title} color="textSecondary" gutterBottom>Simulation</Typography>
-                    {message}
-                </CardContent>
-                <CardActions>
-                    <ConnectButton connection={connection}/>
-                    {/* <Button disabled={connection !== true} onClick={pauseSimulation} size="small">Pause</Button> */}
-                    <Button disabled={connection !== true} onClick={sendParamaters} size="small">Submit Paramaters</Button>
-                    <Button disabled={connection !== true} onClick={retrieveOrders} size="small">Retrieve Orders</Button>
-                    <Button disabled={connection !== true} onClick={intializeOrder} size="small">Start</Button>
-                </CardActions>
-            </Card>
-          </Grid>
-        </Grid>
+        
       </div>
     </div>
   )
