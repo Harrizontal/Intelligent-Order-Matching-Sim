@@ -38,7 +38,7 @@ const EnvSettings = (props) => {
 
   return(
     <Card style={{margin:"1%"}}>
-        <Card.Header>Environment</Card.Header>
+        <Card.Header>Boundary</Card.Header>
         <Card.Body>
           <Card.Text>
             {mapDraw.polygon_coordinates != null ? <Alert variant='success'>Polygon drawn</Alert> : ""}

@@ -6,14 +6,14 @@ import Col from 'react-bootstrap/Col'
 
 
 const DispatcherParameters = forwardRef((props,ref) => {
-    const [dispatchInt, setDispatchInt] = useState(500)
-    const [simReputation, setSimReputation] = useState(1.5)
+    const [dispatchInt, setDispatchInt] = useState(5000)
+    const [simReputation, setSimReputation] = useState(5)
 
     useImperativeHandle(ref, () => ({
       getDispatchParameters(){
         let params = {
           dispatcher_interval: parseFloat(dispatchInt),
-          similiar_reputation: parseFloat(simReputation)
+          similar_reputation: parseFloat(simReputation)
         }
         return params
       }
@@ -23,7 +23,7 @@ const DispatcherParameters = forwardRef((props,ref) => {
       <Card style={{margin:"1% 1% 1% 1%"}}>
         <Card.Header>Dispatcher Parameters</Card.Header>
         <Card.Body>
-          <Card.Title>Adjust speed of tasks distributed to dispatcher</Card.Title>
+          <Card.Title>Adjust distribution speed of order dispatcher</Card.Title>
           <Card.Text>
             <Form.Group controlId="formPerKm">
               <Form.Label>Dispatch Interval (in ms)</Form.Label>

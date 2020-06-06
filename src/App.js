@@ -18,6 +18,7 @@ import MapSettings from './MapSettings'
 import EnvSettings from "./EnvSettings";
 import TaskSettings from "./TaskSettings"
 import DispatcherParameters from "./DispatcherParameters";
+import DriverParameters from "./DriverParameters";
 
 import DeckGLMap from "./reactmap/DeckGLMap"
 import VirusParameters from "./VirusParameters";
@@ -148,17 +149,24 @@ function App() {
   function generatecsv(){
     socket.current.send("[3,1]")
   }
+
+  
  
   function retrieveOrders(){
     socket.current.send("[3,2]")
   }
 
-  //TODO: 
+  function generateDriverCSV(){
+    socket.current.send("[3,3]")
+  }
+
+
   function sendParamaters(){
     var obj = [0,1,{
       task_parameters: taskRef.current.getTaskParameters() ,
       dispatcher_parameters: dispatchRef.current.getDispatchParameters(),
-      virus_parameters: virusRef.current.getVirusParameters()
+      virus_parameters: virusRef.current.getVirusParameters(),
+      driver_parameters: driverRef.current.getDriverParameters()
     }]
     var data = JSON.stringify(obj)
     console.log(obj)
@@ -334,6 +342,7 @@ function App() {
                   
                   const ldr = lineDataRegret
                   let drivers_regret = res.data.drivers_regret
+                  console.log(drivers_regret)
                   if (drivers_regret.length > 20){
                     break
                   }
@@ -466,6 +475,7 @@ function App() {
   }
 
   const taskRef = useRef();
+  const driverRef = useRef();
   const dispatchRef = useRef();
   const virusRef = useRef();
   return (
@@ -482,11 +492,12 @@ function App() {
             <Card.Header>Main</Card.Header>
             <Card.Body>
               <Card.Text>
-                  <ConnectButton connection={connection} style={{marginLeft:"1%", marginRight:"1%"}}/>
-                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={sendParamaters} size="small">Submit Paramaters</Button>
-                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={retrieveOrders} size="small">Retrieve Orders</Button>
-                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={intializeOrder} size="small">Start</Button>
-                  <Button disabled={connection !== true} style={{marginLeft:"1%"}} onClick={generatecsv} size="small">Generate CSV</Button>
+                  <ConnectButton connection={connection} style={{margin:"1%"}}/>
+                  <Button disabled={connection !== true} style={{margin:"1%"}} onClick={sendParamaters} size="small">Submit Paramaters</Button>
+                  <Button disabled={connection !== true} style={{margin:"1%"}} onClick={retrieveOrders} size="small">Retrieve Orders</Button>
+                  <Button disabled={connection !== true} style={{margin:"1%"}} onClick={intializeOrder} size="small">Start</Button>
+                  <Button disabled={connection !== true} style={{margin:"1%"}} onClick={generatecsv} size="small">Generate Virus CSV</Button>
+                  <Button disabled={connection !== true} style={{margin:"1%"}} onClick={generateDriverCSV} size="small">Generate Drivers' Stats CSV</Button>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -494,6 +505,7 @@ function App() {
         </Tab>
         <Tab eventKey="general" title="General">
           <TaskSettings ws={socket} ref={taskRef}/>
+          <DriverParameters ws={socket} ref={driverRef}/>
           <DispatcherParameters ws={socket} ref={dispatchRef}/>
         </Tab>
         <Tab eventKey="virus" title="Virus">
