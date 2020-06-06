@@ -1,3 +1,5 @@
+Script to export the highway and roads only
+
 <osm-script output="json" timeout="25">
   <!-- gather results -->
   <union>
