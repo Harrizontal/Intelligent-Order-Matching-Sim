@@ -1,5 +1,5 @@
 # A map visualization tool for Multi-Agent Ride Sharing System Simulation
-An user interface for a testbed on studying virus (e.g COVID-19) spreading in ride-sharing systems
+An user interface equipped with a map for a testbed on studying virus (e.g COVID-19) spreading in ride-sharing systems
 
 ## Preview
 ![Preview](https://i.gyazo.com/5d4299f375695df72d922129ed051bf6.gif)
@@ -40,5 +40,5 @@ Please ensure you have started running the simulator (Golang).
 
 ## Drivers and virus data 
 ![Data](https://i.gyazo.com/8d9d8b1ee46449137e5b7aff320d201e.gif)
-The map visulization tool is able to generate data regarding to the drivers (reputation, fatigue, etc) and virus after the simulation has **ended** . It is stored under driver and virus folder under Assets folder. 
+The map visulization tool is able to generate data regarding to the drivers (reputation, fatigue, etc) and virus after the simulation has **ended** . It is stored under driver and virus folder under Assets folder (in the simulator)
 
