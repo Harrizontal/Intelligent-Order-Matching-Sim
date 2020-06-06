@@ -14,12 +14,16 @@ import Paper from '@material-ui/core/Paper';
 import * as d3 from "d3";
 import {testFunction,loadGraphs} from "../mapultis/readfile"
 
+// This component is unused.
+// Old implementation of the map
+
 
 const styles = {
   width: "100%",
   height: "100%",
   position: "relative"
 };
+
 
 const MapboxGLMap = forwardRef((props,ref) => {
   const [map, setMap] = useState(null);
