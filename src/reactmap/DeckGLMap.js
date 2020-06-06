@@ -1,13 +1,14 @@
 import React, {Component} from "react"
-import DeckGL, { IconLayer,LineLayer,ScatterplotLayer ,PolygonLayer} from "deck.gl";
+import DeckGL, { ScatterplotLayer ,PolygonLayer} from "deck.gl";
 import { EditableGeoJsonLayer, DrawPolygonMode } from 'nebula.gl';
 import { StaticMap } from "react-map-gl";
 import { connect } from 'react-redux'
 
+// Create a mapbox account, generate a token and put in here.
 const MAPBOX_ACCESS_TOKEN =
-    "pk.eyJ1IjoiaGFycml6b250YWwiLCJhIjoiY2l6YWw3YW90MDQ1NzJ3cDl5bXd4M2Y4aSJ9.CnTz5K2ShZcuLiG0xYLBKw";
+    "pk.eyJ1IjoiaGFycml6b250YWwiLCJhIjoiY2tiMzRkb3I4MDJiejJ6bzZvM3U0eTBlbiJ9.JOOkeGelJapEFeoHPOINng";
 
-
+// Coordinates are pointing to center of Chengdu, China.
 const initialViewState = {
     longitude: 104.053993,
     latitude: 30.684104,
@@ -25,7 +26,7 @@ const myFeatureCollection = {
 
 const selectedFeatureIndexes = [];
 
-
+// Constants of colours for status of the driver (roaming, picking up, etc)
 const STATUS_COLOURS = {
     RED: [220, 20, 60], // crimison
     PURPLE: [138,43,226], // purple (blueviolet)
@@ -35,6 +36,7 @@ const STATUS_COLOURS = {
     BLACK: [0,0,0] // black
 };
 
+// Contacts of colours for the virus
 const VIRUS_COLOURS = {
     DRIVERS: {
         NONE: [0, 204, 102], // crimison
@@ -117,7 +119,8 @@ class DeckGLMap extends Component {
                      <p style={{margin:0,padding:0}}><b>Task {hoveredObject.properties.information.id} </b></p>
                     </div>
                   );
-
+            case null:
+                return null;
         }
        
       }
@@ -237,31 +240,6 @@ class DeckGLMap extends Component {
             })
         ]
 
-        // const layers = [
-        //     new ScatterplotLayer({
-        //         id: 's-a',
-        //         data: this.state.airplanes,
-        //         pickable: false,
-        //         opacity: 0.8,
-        //         radiusMinPixels: 5,
-        //         radiusMaxPixels: 100,
-        //         getPosition: d => [d.longitude, d.latitude],
-        //         getColor: d => [255,140,0],
-        //         getRadius: 5
-        //     }),
-        //     new EditableGeoJsonLayer({
-        //         id: 'geojson-layer',
-        //         data: this.state.data,
-        //         mode: DrawPolygonMode,
-        //         selectedFeatureIndexes,
-        //         onEdit: ({updatedData})=>{
-        //             this.setState({
-        //                 data: updatedData
-        //             })
-        //         }
-        //     })
-        // ]
-
         return (
             <div style={{width: "100%",height:"100%"}}>
                 <DeckGL
@@ -270,8 +248,7 @@ class DeckGLMap extends Component {
                     height="100%"
                     initialViewState={initialViewState}
                     controller={true}
-                    layers={layers}
-                >
+                    layers={layers}>
                     
                     <StaticMap mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}/>
                 </DeckGL>

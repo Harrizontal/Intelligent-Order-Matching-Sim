@@ -4,6 +4,7 @@ import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
 
+// 'Driver Parameters' under 'General' tab
 const DriverParameters = forwardRef((props,ref) => {
     const [travelMode,setTravelMode] = useState("node")
     const [speed,setSpeed] = useState(120)

@@ -4,7 +4,7 @@ import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
 
-
+// 'Dispatcher Parameters' section under 'General' tab
 const DispatcherParameters = forwardRef((props,ref) => {
     const [dispatchInt, setDispatchInt] = useState(5000)
     const [simReputation, setSimReputation] = useState(5)
@@ -25,11 +25,11 @@ const DispatcherParameters = forwardRef((props,ref) => {
         <Card.Body>
           <Card.Title>Adjust distribution speed of order dispatcher</Card.Title>
           <Card.Text>
-            <Form.Group controlId="formPerKm">
+            <Form.Group controlId="formDispatchInterval">
               <Form.Label>Dispatch Interval (in ms)</Form.Label>
               <Form.Control size="sm" type="text" placeholder="5" value={dispatchInt} onChange={e => setDispatchInt(e.target.value)}/>
             </Form.Group>
-            <Form.Group controlId="formPeak">
+            <Form.Group controlId="formSimilarReputation">
               <Form.Label>Similar Reputation (+/-)</Form.Label>
               <Form.Control size="sm" type="text" placeholder="5" value={simReputation} onChange={e => setSimReputation(e.target.value)}/>
             </Form.Group>

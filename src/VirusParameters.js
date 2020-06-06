@@ -1,11 +1,10 @@
 import React, {useState, useImperativeHandle, forwardRef } from "react";
-import ReactDOM from 'react-dom';
 import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
 
 
-
+// Under 'Virus' tab where the user can tuned the virus parameters
 const VirusParameters = forwardRef((props,ref) => {
     const [infectedDrivers, setInfectedDrivers] = useState(10)
     const [infectedTasks, setInfectedTasks] = useState(10)
@@ -37,98 +36,46 @@ const VirusParameters = forwardRef((props,ref) => {
         <Card.Body>
           <Card.Text>
             <Form.Row>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formDriversInfected">
                 <Form.Label>% of Drivers infected (0-100)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={infectedDrivers} onChange={e => setInfectedDrivers(e.target.value)}/>
               </Form.Group>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formTasksInfected">
                 <Form.Label>% of Tasks infected (0-100)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={infectedTasks} onChange={e => setInfectedTasks(e.target.value)}/>
               </Form.Group>
             </Form.Row>
 
             <Form.Row>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formDriversMask">
                 <Form.Label>% of Drivers with Mask (0-100)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={driverMask} onChange={e => setDriverMask(e.target.value)}/>
               </Form.Group>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formPassengersMask">
                 <Form.Label>% of Passengers with Mask (0-100)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={passengerMask} onChange={e => setPassengerMask(e.target.value)}/>
               </Form.Group>
             </Form.Row>
 
-            <Form.Group controlId="formPeak">
+            <Form.Group controlId="formMaskEffectiveness">
               <Form.Label>% of Mask Effectiveness (0-100)</Form.Label>
               <Form.Control size="sm" type="text" placeholder="5" value={maskEffect} onChange={e => setMaskEffect(e.target.value)}/>
             </Form.Group>
 
             <Form.Row>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formEvolveProb">
                 <Form.Label>Evolve Probability (%)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={evolveProb} onChange={e => setEvolveProb(e.target.value)}/>
               </Form.Group>
-              <Form.Group as={Col} controlId="formPeak">
+              <Form.Group as={Col} controlId="formSpreadProb">
                 <Form.Label>Spread Probability (%)</Form.Label>
                 <Form.Control size="sm" type="text" placeholder="5" value={spreadProb} onChange={e => setSpreadProb(e.target.value)}/>
               </Form.Group>
             </Form.Row>
-
-            
           </Card.Text>
         </Card.Body>
       </Card>
 
-
-        // <Card>
-        //     <CardContent>
-        //     <Typography className={classes.title} color="textSecondary" gutterBottom>
-        //       Virus Parameters
-        //       </Typography>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>% of Drivers infected (0-100)</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={infectedDrivers} onChange={e => setInfectedDrivers(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>% of Tasks infected (0-100)</Grid>
-        //             <Grid item xs={6}>
-        //               <input type="text" value={infectedTasks} onChange={e => setInfectedTasks(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>Evolve Probability</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={evolveProb} onChange={e => setEvolveProb(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>Spread Probability</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={spreadProb} onChange={e => setSpreadProb(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>% of Drivers with Mask (0-100)</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={driverMask} onChange={e => setDriverMask(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>% of Passengers with Mask (0-100)</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={passengerMask} onChange={e => setPassengerMask(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //           <Grid container direction="row" xs={12}>
-        //             <Grid item xs={6}>% of Mask Effectiveness (0-100)</Grid>
-        //             <Grid item xs={6}>
-        //                 <input type="text" value={maskEffect} onChange={e => setMaskEffect(e.target.value)}/>
-        //             </Grid>
-        //           </Grid>
-        //     </CardContent>
-        // </Card>
     )
 })
 

@@ -1,12 +1,11 @@
-import React, {useState, useImperativeHandle, forwardRef } from "react";
-import { useSelector,useDispatch } from "react-redux";
-import ReactDOM from 'react-dom';
+import React, { forwardRef } from "react";
+import { useDispatch } from "react-redux";
 import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
-
+// 'Display' tab where user can toggle between driver's status and virus level
 const MapSettings = forwardRef((props,ref) => {
     const dispatch = useDispatch()
 
@@ -17,8 +16,6 @@ const MapSettings = forwardRef((props,ref) => {
             payload: parseInt(e.target.value)
         })
     }
-
- 
 
     return (
         <Card style={{margin:"1% 1% 1% 1%"}}>

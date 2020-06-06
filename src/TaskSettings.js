@@ -4,6 +4,7 @@ import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
 
+// 'Task' section under 'General' tab
 const TaskSetting = forwardRef((props,ref) => {
     const [taskValueType,setTaskValueType] = useState("distance")
     const [taskValue,setTaskValue] = useState(3)
@@ -78,7 +79,7 @@ const TaskSetting = forwardRef((props,ref) => {
                   </Form.Control>
                 </Form.Group>
 
-                <Form.Group as={Col} controlId="formPeak">
+                <Form.Group as={Col} controlId="formReputationVALUE">
                   <Form.Label>Reputation value (0-5)</Form.Label>
                   <Form.Control size="sm" type="text" placeholder="5" value={reputationValue} disabled={reputationGivenType == "random"}/>
                 </Form.Group>

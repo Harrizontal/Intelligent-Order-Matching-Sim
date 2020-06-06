@@ -1,4 +1,4 @@
-Script to export the highway and roads only
+Script to export the highway and roads only https://overpass-turbo.eu/
 
 <osm-script output="json" timeout="25">
   <!-- gather results -->

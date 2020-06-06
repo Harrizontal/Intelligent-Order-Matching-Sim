@@ -1,10 +1,8 @@
-import React, { useState, useImperativeHandle, forwardRef } from "react";
-import ReactDOM from 'react-dom';
+import React, { forwardRef } from "react";
 import Card from 'react-bootstrap/Card'
-import Form from 'react-bootstrap/Form'
-import Col from 'react-bootstrap/Col'
 
-
+// 'Terminal' section under 'Control' tab
+// Just to display messages from the Golang simulation
 const Terminal = forwardRef((props,ref) => {
 
     const lines = props.data.map((line) =>

@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
-import ReactDOM from 'react-dom';
+import React, { useState } from "react";
 import { useSelector,useDispatch } from "react-redux";
 import Card from 'react-bootstrap/Card'
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Alert from 'react-bootstrap/Alert'
 
-
+// 'Boundary' section under 'Control' tab
 const EnvSettings = (props) => {
   const [noOfDrivers, setNoOfDrivers] = useState(0);
   const mapDraw = useSelector(state => state.mapDraw)
@@ -16,8 +15,6 @@ const EnvSettings = (props) => {
   const createEnvironment = () => {
     console.log(mapDraw)
     if (mapDraw.polygon_coordinates != null){
-      // console.log("Environment Created")
-      // console.log(mapDraw.polygon_coordinates)
       var command = [1,parseInt(noOfDrivers),mapDraw.polygon_coordinates]
       if (props.ws.current != null){
         props.ws.current.send(JSON.stringify(command))
@@ -27,15 +24,11 @@ const EnvSettings = (props) => {
       }else{
         alert("Please connect to Golang backend first.")
       }
-     
-      
     }else{
       alert("No polygon selected")
     }
   }
   
-
-
   return(
     <Card style={{margin:"1%"}}>
         <Card.Header>Boundary</Card.Header>

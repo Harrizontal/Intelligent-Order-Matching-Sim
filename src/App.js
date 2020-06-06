@@ -6,8 +6,6 @@ import Button from 'react-bootstrap/Button';
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import Card from 'react-bootstrap/Card'
-import Col from 'react-bootstrap/Col'
-import Row from 'react-bootstrap/Row'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -23,7 +21,7 @@ import DriverParameters from "./DriverParameters";
 import DeckGLMap from "./reactmap/DeckGLMap"
 import VirusParameters from "./VirusParameters";
 
-
+// Main file
 function App() {
   const dispatch = useDispatch()
   const [message,setMessage] = useState([])
@@ -142,6 +140,8 @@ function App() {
 
   const [ws, setWebSocket] = useState(null)
 
+  // Functions to send commands to the Golang Simulation via websocket
+
   function intializeOrder(){
     socket.current.send("[3,0]")
   }
@@ -149,8 +149,6 @@ function App() {
   function generatecsv(){
     socket.current.send("[3,1]")
   }
-
-  
  
   function retrieveOrders(){
     socket.current.send("[3,2]")
@@ -289,12 +287,9 @@ function App() {
     }
   }
 
-  // let lineChartOptionsEarning = {...lineChartOptions}
-  // //console.log(lineChartOptionsEarning.scales.xAxes[0].scaleLabel)
-  // lineChartOptionsEarning.scales.xAxes[0].scaleLabel.labelString = 
-
   useEffect(() => {
     if (socket.current != null){
+      // Receive messages from Golang Simulation via web socket
       socket.current.onmessage = (evt) => {
           var res = JSON.parse(evt.data)
           var eId = res.data.environment_id // environment Id
@@ -307,10 +302,10 @@ function App() {
                 case 0: // environment data
                   setMessage(prevArray => [res.data, ...prevArray])
                   break
-                case 1: // driver and tasks data
+                case 1: // driver data (drivers nodes)
                   setDriversData(res.data)
                   break
-                case 2: // tasks data
+                case 2: // env
                   setEnvsData(res.data)
                   break
                 case 3:
@@ -338,18 +333,15 @@ function App() {
                   newLineDataStatus.datasets[2].data = fetchingData
                   setLineData(newLineDataStatus)
                   break
-                case 5:
-                  
+                case 5: // Display line charts of the drivers' regret (up to 20 drivers only)
+                // Spawn 20 drivers and below to see the regret of the drivers
                   const ldr = lineDataRegret
                   let drivers_regret = res.data.drivers_regret
                   console.log(drivers_regret)
                   if (drivers_regret.length > 20){
                     break
                   }
-                  // console.log(res.data)
-                  // console.log(ldr)
-                  // console.log("Total drivers: "+drivers_regret.length)
-                  // console.log("Current drivers: "+ldr.datasets.length)
+
                   ldr.labels = lineDataRegret.labels.concat(res.data.time)
                   if (ldr.labels.length > 15){
                     ldr.labels.shift()
@@ -386,9 +378,9 @@ function App() {
                     setLineDataRegret(ldr)
                   }
                   break;
-                case 6:
-                  const ttdData = lineDataVirus.datasets[0].data // task to drivers
-                  const dttData = lineDataVirus.datasets[1].data // drivers to task
+                case 6: // Generate the line chart of the virus spread for TTD and DTT
+                  const ttdData = lineDataVirus.datasets[0].data // task to drivers (ttd)
+                  const dttData = lineDataVirus.datasets[1].data // drivers to task (dtt)
                   ttdData.push(res.data.tasks_to_drivers)
                   dttData.push(res.data.drivers_to_tasks)
                   const timeLabelsVirus = lineDataVirus.labels.concat(res.data.time)
@@ -453,7 +445,6 @@ function App() {
         socket.current = null
         setConnection(false)
         setMessage([])
-        //childRef.current.resetMap()
         setLineData(intialData)
         setLineDataRegret(intialData2)
         setLineDataVirus(initialDataVirus)
@@ -530,5 +521,4 @@ function App() {
   )
 }
 
-//<LeafletMap markersData={markersData} data={data} />
 export default App;
