@@ -2,8 +2,8 @@
 An user interface equipped with a map for a testbed on studying virus (e.g COVID-19) spreading in ride-sharing systems
 
 ## Preview
-![Preview](https://i.gyazo.com/5d4299f375695df72d922129ed051bf6.gif)
-You can access the gif over [here](https://gyazo.com/5d4299f375695df72d922129ed051bf6).
+![Preview](https://i.gyazo.com/727de7380e120215049bd1945e335159.gif)
+You can access the gif over [here](https://gyazo.com/727de7380e120215049bd1945e335159).
 
 ## Background
 The simulator is equipped with a novel order dispatch algorithm in large-scale on-demand ride-hailing platforms
@@ -27,8 +27,7 @@ The page will reload if you make edits.<br>
 You will also see any lint errors in the console.
 
 ## Steps to run the simulation
-![Steps](https://i.gyazo.com/aa3b80bcc52545a3e58c6f4ee631d1bf.gif)
-You can access the gif over [here](https://gyazo.com/aa3b80bcc52545a3e58c6f4ee631d1bf).
+You can access the gif over [here](https://gyazo.com/aa3b80bcc52545a3e58c6f4ee631d1bf) for a visual guide.
 
 Please ensure you have started running the simulator (Golang).
 
@@ -42,8 +41,7 @@ Please ensure you have started running the simulator (Golang).
 
 
 ## Drivers and virus data 
-![Data](https://i.gyazo.com/8d9d8b1ee46449137e5b7aff320d201e.gif)
-You can access the gif over [here](https://gyazo.com/8d9d8b1ee46449137e5b7aff320d201e).
+You can access the gif over [here](https://gyazo.com/8d9d8b1ee46449137e5b7aff320d201e) for a visual guide.
 
 The map visulization tool is able to generate data regarding to the drivers (reputation, fatigue, etc) and virus after the simulation has **ended** . It is stored under driver and virus folder under Assets folder (in the simulator)
 
